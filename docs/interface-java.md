@@ -24,7 +24,7 @@ src/main/java/com/gabriel/consultasmedicas/
 │   ├── IMedicoService.java
 │   ├── IPacienteService.java
 │   ├── IConsultaService.java
-│   └── IRelatorioService.java
+│   └── IHistoricoService.java
 ```
 
 ---
@@ -108,17 +108,20 @@ public interface IConsultaService {
 
 ---
 
-### 5. `IRelatorioService.java`
-Responsável por geração de relatórios (PDF, estatísticas, etc.)
+### 5. `IHistoricoService.java`
+Responsável pelo controle do histórico de consultas médicas.
 
 ```java
 package com.gabriel.consultasmedicas.interfaces;
 
-import java.io.File;
+import com.gabriel.consultasmedicas.model.Historico;
+import java.util.List;
 
-public interface IRelatorioService {
-    File gerarRelatorioConsultas();
-    File gerarRelatorioPacientesAtivos();
+public interface IHistoricoService {
+    Historico salvar(Historico historico);
+    List<Historico> listarTodos();
+    List<Historico> listarPorMedico(Long medicoId);
+    List<Historico> listarPorPaciente(Long pacienteId);
 }
 ```
 
