@@ -1,119 +1,79 @@
-# 🧩 Modelagem de Classes — Sistema de Gestão de Consultas Médicas
+# 📘 Modelagem de Classes
 
-## 📘 Visão Geral
-A modelagem de classes define as entidades principais do sistema e seus relacionamentos, que serão refletidos nas tabelas do banco de dados via JPA (Java Persistence API).
+Este documento descreve as classes principais do sistema e seus relacionamentos.
 
----
+## 🧩 Classe `Usuario`
+Representa o usuário base do sistema (médico, paciente, ou administrador).
 
-## 🧱 Estrutura de Pastas
-```
-src/
-└── main/
-    └── java/
-        └── com/sistemamedico/
-            └── model/
-                ├── Usuario.java
-                ├── Medico.java
-                ├── Paciente.java
-                └── Consulta.java
-```
-
----
-
-## 🧍‍♂️ Classe `Usuario`
-Representa os usuários do sistema, podendo ser **Administrador**, **Médico** ou **Paciente**.
-
-**Atributos:**
-- `id`: Identificador único.
-- `nome`: Nome completo do usuário.
-- `email`: E-mail de acesso (único).
-- `senha`: Senha criptografada.
-- `tipo`: Enum (ADMIN, MEDICO, PACIENTE).
-
-**Relacionamentos:**
-- `@OneToOne` com `Medico` ou `Paciente` (dependendo do tipo).
-
-**Métodos úteis:**
-- `isAdmin()`, `isMedico()`, `isPaciente()` para verificação de papel.
+| Atributo | Tipo | Descrição |
+|-----------|------|-----------|
+| id | Long | Identificador único |
+| nome | String | Nome completo do usuário |
+| email | String | E-mail de login |
+| senha | String | Senha criptografada |
+| tipo | String | Define se é "medico", "paciente" ou "admin" |
 
 ---
 
 ## 🩺 Classe `Medico`
-Representa o médico vinculado a um usuário do tipo **MEDICO**.
+Representa os médicos cadastrados no sistema.
 
-**Atributos:**
-- `id`: Identificador único.
-- `crm`: Código de registro profissional.
-- `especialidade`: Especialidade médica.
-- `usuario`: Associação com a classe `Usuario`.
+| Atributo | Tipo | Descrição |
+|-----------|------|-----------|
+| id | Long | Identificador único |
+| crm | String | Código de registro profissional |
+| especialidade | String | Especialidade médica |
+| usuario | Usuario | Relacionamento 1:1 com a tabela de usuários |
 
-**Relacionamentos:**
-- `@OneToOne` com `Usuario`.
-- `@OneToMany` com `Consulta` (um médico pode ter várias consultas).
-
----
-
-## 🧑‍⚕️ Classe `Paciente`
-Representa o paciente vinculado a um usuário do tipo **PACIENTE**.
-
-**Atributos:**
-- `id`: Identificador único.
-- `cpf`: Documento de identificação.
-- `dataNascimento`: Data de nascimento.
-- `telefone`: Contato.
-- `endereco`: Endereço completo.
-- `usuario`: Associação com `Usuario`.
-
-**Relacionamentos:**
-- `@OneToOne` com `Usuario`.
-- `@OneToMany` com `Consulta` (um paciente pode ter várias consultas).
+**Relacionamentos**
+- Um `Medico` está vinculado a **um** `Usuario`.
+- Um `Medico` pode possuir vários `Historico` de consultas.
 
 ---
 
-## 📅 Classe `Consulta`
-Registra as consultas médicas realizadas.
+## 🧍 Classe `Paciente`
+Representa os pacientes cadastrados no sistema.
 
-**Atributos:**
-- `id`: Identificador único.
-- `dataConsulta`: Data e hora da consulta.
-- `descricao`: Descrição ou observações.
-- `status`: Enum (AGENDADA, REALIZADA, CANCELADA).
-- `medico`: Médico responsável.
-- `paciente`: Paciente atendido.
+| Atributo | Tipo | Descrição |
+|-----------|------|-----------|
+| id | Long | Identificador único |
+| cpf | String | Documento pessoal |
+| telefone | String | Número de contato |
+| usuario | Usuario | Relacionamento 1:1 com a tabela de usuários |
 
-**Relacionamentos:**
-- `@ManyToOne` com `Medico`.
-- `@ManyToOne` com `Paciente`.
-
----
-
-## 🔗 Relacionamentos Resumidos
-
-| Entidade | Relacionamento | Tipo |
-|-----------|----------------|------|
-| `Usuario` ↔ `Medico` | 1:1 | `@OneToOne` |
-| `Usuario` ↔ `Paciente` | 1:1 | `@OneToOne` |
-| `Medico` ↔ `Consulta` | 1:N | `@OneToMany` |
-| `Paciente` ↔ `Consulta` | 1:N | `@OneToMany` |
+**Relacionamentos**
+- Um `Paciente` está vinculado a **um** `Usuario`.
+- Um `Paciente` pode ter vários registros de `Historico`.
 
 ---
 
-## 🧩 Diagrama Simplificado
+## 🗓️ Classe `Historico`
+Representa o histórico de consultas ou atendimentos médicos.
 
-```
-Usuario (id, nome, email, senha, tipo)
- │
- ├── Medico (id, crm, especialidade, usuario_id)
- │     └── Consulta (id, dataConsulta, descricao, status, medico_id, paciente_id)
- │
- └── Paciente (id, cpf, dataNascimento, telefone, endereco, usuario_id)
-       └── Consulta (...)
-```
+| Atributo | Tipo | Descrição |
+|-----------|------|-----------|
+| id | Long | Identificador único |
+| descricao | String | Descrição do atendimento |
+| dataConsulta | LocalDateTime | Data e hora da consulta |
+| medico | Medico | Relacionamento N:1 (vários históricos para um médico) |
+| paciente | Paciente | Relacionamento N:1 (vários históricos para um paciente) |
+
+**Relacionamentos**
+- Muitos `Historico` pertencem a um `Medico`.
+- Muitos `Historico` pertencem a um `Paciente`.
+
+---
+
+## 🔗 Relacionamentos Gerais
+
+- `Usuario` é o núcleo do sistema (base para médicos e pacientes).
+- `Medico` e `Paciente` se ligam a `Usuario` por relacionamento **OneToOne**.
+- `Historico` conecta `Medico` e `Paciente` por relacionamentos **ManyToOne**.
 
 ---
 
 ## 🧠 Observações
-- As classes estão anotadas com `@Entity` e `@Table`.
-- O `@GeneratedValue` define IDs automáticos.
-- Todos os relacionamentos são gerenciados pelo **Hibernate (JPA)**.
-- A modelagem é compatível com bancos como **MySQL**, **PostgreSQL** e **MariaDB**.
+
+- As classes usam anotações do **Jakarta Persistence (JPA)**.
+- A comunicação com o banco será feita pelos repositórios (`Repository`).
+- Controllers irão utilizar os repositórios para expor endpoints REST.
