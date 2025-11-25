@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Agendamento de Consulta</title>
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+</head>
+<body class="bg-dark text-white d-flex justify-content-center align-items-center vh-100">
+
+<div class="card shadow p-4" style="width: 450px; background-color: #1c1c1c;">
+    <h2 class="text-center mb-4">Agendar Consulta</h2>
+
+    <div id="errorMsg" class="alert alert-danger d-none text-center"></div>
+    <div id="successMsg" class="alert alert-success d-none text-center"></div>
+
+    <div class="mb-3">
+        <label for="medico" class="form-label text-white">Médico</label>
+        <select id="medico" class="form-select bg-dark text-white">
+            <option value="">Selecione um médico</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="dataHora" class="form-label text-white">Data e Hora</label>
+        <input type="datetime-local" id="dataHora" class="form-control bg-dark text-white" style="border: none;">
+    </div>
+
+    <div class="mb-3">
+        <label for="motivo" class="form-label text-white">Motivo da Consulta</label>
+        <textarea id="motivo" class="form-control bg-dark text-white" rows="3" style="border: none;" placeholder="Descreva o motivo da consulta"></textarea>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <button onclick="agendarConsulta()" class="btn btn-dark">Confirmar</button>
+        <button onclick="cancelar()" class="btn btn-secondary">Cancelar</button>
+    </div>
+</div>
+
+<script src="../static/js/appointment.js"></script>
+<script src="../static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

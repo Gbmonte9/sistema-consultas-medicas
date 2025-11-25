@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Erro - Sistema Médico</title>
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+</head>
+<body class="bg-dark text-white d-flex justify-content-center align-items-center vh-100">
+
+<div class="text-center">
+    <h1 class="display-1 fw-bold">Ops!</h1>
+    <p class="fs-3"> <span id="errorCode">Erro</span> - <span id="errorMessage">Algo deu errado.</span></p>
+    <p class="lead">
+        Tente voltar para a <a href="/login" class="text-decoration-none text-white">página inicial</a>.
+    </p>
+    <button onclick="voltar()" class="btn btn-dark mt-3">Voltar</button>
+</div>
+
+<script>
+    // Função para voltar à página anterior ou login
+    function voltar() {
+        window.history.back();
+    }
+
+    // Exemplo: você pode passar parâmetros na URL para mostrar código/mensagem
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const msg = params.get("msg");
+
+    if(code) document.getElementById("errorCode").textContent = code;
+    if(msg) document.getElementById("errorMessage").textContent = msg;
+</script>
+<script src="../static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
