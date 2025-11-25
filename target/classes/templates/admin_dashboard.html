@@ -3,85 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <title>Painel do Administrador</title>
-    <link rel="stylesheet" href="../static/css/styles.css">
     <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/styles.css">
 </head>
-<body>
+<body class="bg-dark text-white">
 
-    <div class="dashboard-container">
+<!-- Header -->
+<div th:replace="fragments/header :: header"></div>
 
-        <div class="header-top">
-            <h1>Painel do Administrador</h1>
-            <button class="logout-btn" onclick="logout()">Sair</button>
-        </div>
+<div class="d-flex">
+
+    <!-- Sidebar -->
+    <div th:replace="fragments/sidebar :: sidebar"></div>
+
+    <!-- Conteúdo principal -->
+    <div class="container-fluid p-4">
+
+        <!-- Painel do Administrador -->
+        <h1 class="mb-4">Painel do Administrador</h1>
 
         <!-- MÉDICOS -->
-        <div class="card">
-            <h2>Médicos Cadastrados</h2>
-            <table id="tabelaMedicos">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Especialidade</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Conteúdo preenchido via JS -->
-                </tbody>
-            </table>
-
-            <button class="add-btn" onclick="abrirCadastroMedico()">Adicionar Médico</button>
+        <div class="card mb-4 bg-secondary text-white shadow">
+            <div class="card-body">
+                <h2 class="card-title">Médicos Cadastrados</h2>
+                <table class="table table-dark table-striped" id="tabelaMedicos">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Especialidade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Conteúdo preenchido via JS -->
+                    </tbody>
+                </table>
+                <button class="btn btn-dark mt-2" onclick="abrirCadastroMedico()">Adicionar Médico</button>
+            </div>
         </div>
 
         <!-- PACIENTES -->
-        <div class="card">
-            <h2>Pacientes Cadastrados</h2>
-            <table id="tabelaPacientes">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>E-mail</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Conteúdo preenchido via JS -->
-                </tbody>
-            </table>
-
-            <button class="add-btn" onclick="abrirCadastroPaciente()">Adicionar Paciente</button>
+        <div class="card mb-4 bg-secondary text-white shadow">
+            <div class="card-body">
+                <h2 class="card-title">Pacientes Cadastrados</h2>
+                <table class="table table-dark table-striped" id="tabelaPacientes">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Conteúdo preenchido via JS -->
+                    </tbody>
+                </table>
+                <button class="btn btn-dark mt-2" onclick="abrirCadastroPaciente()">Adicionar Paciente</button>
+            </div>
         </div>
 
         <!-- CONSULTAS -->
-        <div class="card">
-            <h2>Consultas Registradas</h2>
-            <table id="tabelaConsultas">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Paciente</th>
-                        <th>Médico</th>
-                        <th>Data/Hora</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- JS preenche -->
-                </tbody>
-            </table>
+        <div class="card mb-4 bg-secondary text-white shadow">
+            <div class="card-body">
+                <h2 class="card-title">Consultas Registradas</h2>
+                <table class="table table-dark table-striped" id="tabelaConsultas">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>Médico</th>
+                            <th>Data/Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- JS preenche -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- RELATÓRIOS -->
-        <div class="card">
-            <h2>Relatórios do Sistema</h2>
-            <button onclick="gerarRelatorioPDF()">Gerar Relatório PDF</button>
+        <div class="card mb-4 bg-secondary text-white shadow">
+            <div class="card-body">
+                <h2 class="card-title">Relatórios do Sistema</h2>
+                <button class="btn btn-dark" onclick="gerarRelatorioPDF()">Gerar Relatório PDF</button>
+            </div>
         </div>
 
     </div>
+</div>
 
-    <script src="../static/js/admin.js"></script>
-    <script src="../static/js/bootstrap.bundle.min.js"></script>
+<!-- Footer -->
+<div th:replace="fragments/footer :: footer"></div>
+
+<script src="../static/js/admin.js"></script>
+<script src="../static/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
