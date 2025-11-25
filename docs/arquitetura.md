@@ -31,6 +31,7 @@ src/main/java/com/gabriel/consultasmedicas/
 ├── model/
 ├── repository/
 ├── service/
+├── interfaces/
 ├── config/
 └── ConsultasMedicasApplication.java
 ```
