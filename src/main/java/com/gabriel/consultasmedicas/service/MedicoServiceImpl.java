@@ -22,7 +22,7 @@ public class MedicoServiceImpl implements IMedicoService {
     }
 
     @Override
-    public List<Medico> listarTodos() {
+    public List listarTodos() {
         return medicoRepository.findAll();
     }
 

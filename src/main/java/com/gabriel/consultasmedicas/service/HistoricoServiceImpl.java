@@ -52,4 +52,10 @@ public class HistoricoServiceImpl implements IHistoricoService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public byte[] gerarHistoricoConsultasPDF() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

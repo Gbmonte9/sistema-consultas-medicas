@@ -12,4 +12,5 @@ public interface IHistoricoService {
     Historico buscarPorId(Long id);
     void remover(Long id);
 	Historico cadastrarHistorico(Historico historico);
+	byte[] gerarHistoricoConsultasPDF();
 }

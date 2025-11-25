@@ -22,7 +22,7 @@ public class PacienteServiceImpl implements IPacienteService {
     }
 
     @Override
-    public List<Paciente> listarTodos() {
+    public List listarTodos() {
         return pacienteRepository.findAll();
     }
 

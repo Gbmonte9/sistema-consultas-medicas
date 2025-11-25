@@ -1,49 +1,41 @@
 package com.gabriel.consultasmedicas.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.gabriel.consultasmedicas.dto.ConsultaRequestDTO; // DTO para agendar
+import com.gabriel.consultasmedicas.dto.ConsultaResponseDTO; // DTO para retorno
 import com.gabriel.consultasmedicas.interfaces.IConsultaService;
-import com.gabriel.consultasmedicas.model.Consulta;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/consultas")
 public class ConsultaController {
 
-    @Autowired
-    private IConsultaService consultaService;
+    private final IConsultaService consultaService;
 
-    @PostMapping("/agendar")
-    public Consulta agendar(@RequestBody Consulta consulta) {
-        return consultaService.agendarConsulta(consulta);
+    public ConsultaController(IConsultaService consultaService) {
+        this.consultaService = consultaService;
     }
 
-    @DeleteMapping("/cancelar/{id}")
-    public void cancelar(@PathVariable Long id) {
-        consultaService.cancelarConsulta(id);
+    // POST /consultas -> Agenda nova consulta (Paciente)
+    @PostMapping
+    public ResponseEntity<ConsultaResponseDTO> agendarConsulta(@RequestBody ConsultaRequestDTO requestDTO) {
+        ConsultaResponseDTO response = consultaService.agendar(requestDTO);
+        return ResponseEntity.status(201).body(response);
     }
 
+    // GET /consultas -> Lista todas as consultas (Médico / Paciente)
     @GetMapping
-    public List<Consulta> listarTodas() {
-        return consultaService.listarTodas();
+    public ResponseEntity<List<ConsultaResponseDTO>> listarConsultas() {
+        // A lógica de segurança filtra se lista tudo (Médico) ou só as próprias (Paciente)
+        List<ConsultaResponseDTO> consultas = consultaService.listar();
+        return ResponseEntity.ok(consultas);
     }
 
-    @GetMapping("/medico/{medicoId}")
-    public List<Consulta> listarPorMedico(@PathVariable Long medicoId) {
-        return consultaService.listarPorMedico(medicoId);
+    // PUT /consultas/{id}/cancelar -> Cancela consulta (Médico / Paciente)
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelarConsulta(@PathVariable Long id) {
+        consultaService.cancelar(id);
+        return ResponseEntity.noContent().build(); // Status 204 No Content
     }
-
-    @GetMapping("/paciente/{pacienteId}")
-    public List<Consulta> listarPorPaciente(@PathVariable Long pacienteId) {
-        return consultaService.listarPorPaciente(pacienteId);
-    }
-    
 }

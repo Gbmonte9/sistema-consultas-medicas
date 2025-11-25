@@ -109,4 +109,9 @@ public class Usuario {
         return "Usuario{id=" + id + ", nome='" + nome + "', email='" + email + "', tipo=" + tipo + "}";
     }
 
+	public boolean isPresent() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

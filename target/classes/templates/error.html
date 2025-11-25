@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Erro - Sistema Médico</title>
-    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css"> 
 </head>
 <body class="bg-dark text-white d-flex justify-content-center align-items-center vh-100">
 
@@ -17,19 +17,28 @@
 </div>
 
 <script>
-    // Função para voltar à página anterior ou login
+    /**
+     * Tenta voltar para a página anterior, ou redireciona para o login 
+     * se não houver histórico de navegação para evitar ficar preso.
+     */
     function voltar() {
-        window.history.back();
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            // Se não houver histórico, vá diretamente para a página de login.
+            window.location.href = '/login'; 
+        }
     }
-
-    // Exemplo: você pode passar parâmetros na URL para mostrar código/mensagem
+    
+    // Captura os parâmetros de erro da URL (ex: ?code=400&msg=Email%20duplicado)
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     const msg = params.get("msg");
 
+    // Exibe o código e a mensagem se eles existirem na URL
     if(code) document.getElementById("errorCode").textContent = code;
-    if(msg) document.getElementById("errorMessage").textContent = msg;
+    if(msg) document.getElementById("errorMessage").textContent = decodeURIComponent(msg); // Usa decodeURIComponent para exibir espaços e acentos
 </script>
-<script src="../static/js/bootstrap.bundle.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

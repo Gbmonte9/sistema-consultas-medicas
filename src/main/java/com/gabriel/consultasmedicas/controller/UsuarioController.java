@@ -1,48 +1,46 @@
 package com.gabriel.consultasmedicas.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.gabriel.consultasmedicas.dto.UsuarioRequestDTO; // DTO para criar
+import com.gabriel.consultasmedicas.dto.UsuarioResponseDTO; // DTO para retorno
 import com.gabriel.consultasmedicas.interfaces.IUsuarioService;
-import com.gabriel.consultasmedicas.model.Usuario;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
     
-    @Autowired
-    private IUsuarioService usuarioService;
+    private final IUsuarioService usuarioService;
 
-    @PostMapping("/registrar")
-    public Usuario registrar(@RequestBody Usuario usuario) {
-        return usuarioService.registrar(usuario);
+    // Injeção via construtor
+    public UsuarioController(IUsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/login")
-    public Usuario autenticar(@RequestParam String email, @RequestParam String senha) {
-        return usuarioService.autenticar(email, senha);
+    // POST /usuarios -> Cria novo usuário (Admin)
+    @PostMapping
+    public ResponseEntity<UsuarioResponseDTO> criarUsuario(@RequestBody UsuarioRequestDTO requestDTO) {
+        // O Service cuida da criptografia da senha e do salvamento.
+        UsuarioResponseDTO response = usuarioService.criar(requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); // Status 201
     }
 
-    @GetMapping
-    public List<Usuario> listarTodos() {
-        return usuarioService.listarTodos();
+    // GET /medicos -> Lista médicos (Público/Otimização de Rota)
+    @GetMapping("/medicos")
+    public ResponseEntity<List<UsuarioResponseDTO>> listarMedicos() {
+        // O Service busca apenas usuários com TipoUsuario.MEDICO
+        List<UsuarioResponseDTO> medicos = usuarioService.buscarPorTipo("MEDICO");
+        return ResponseEntity.ok(medicos); // Status 200
     }
 
-    @DeleteMapping("/{id}")
-    public void remover(@PathVariable Long id) {
-        usuarioService.remover(id);
+    // GET /pacientes -> Lista pacientes (Admin/Otimização de Rota)
+    @GetMapping("/pacientes")
+    public ResponseEntity<List<UsuarioResponseDTO>> listarPacientes() {
+        // O Service busca apenas usuários com TipoUsuario.PACIENTE
+        List<UsuarioResponseDTO> pacientes = usuarioService.buscarPorTipo("PACIENTE");
+        return ResponseEntity.ok(pacientes); // Status 200
     }
-
-
-    
 }

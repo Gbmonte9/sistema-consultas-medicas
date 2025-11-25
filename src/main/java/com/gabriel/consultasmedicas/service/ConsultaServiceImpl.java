@@ -3,6 +3,9 @@ package com.gabriel.consultasmedicas.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+
+import com.gabriel.consultasmedicas.dto.ConsultaRequestDTO;
+import com.gabriel.consultasmedicas.dto.ConsultaResponseDTO;
 import com.gabriel.consultasmedicas.interfaces.IConsultaService;
 import com.gabriel.consultasmedicas.model.Consulta;
 import com.gabriel.consultasmedicas.repository.ConsultaRepository;
@@ -44,4 +47,22 @@ public class ConsultaServiceImpl implements IConsultaService {
     public List<Consulta> listarPorPaciente(Long pacienteId) {
         return consultaRepository.findByPacienteId(pacienteId);
     }
+
+	@Override
+	public ConsultaResponseDTO agendar(ConsultaRequestDTO requestDTO) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<ConsultaResponseDTO> listar() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void cancelar(Long id) {
+		// TODO Auto-generated method stub
+		
+	}
 }
