@@ -1,31 +1,30 @@
-// IUsuarioService.java
 package com.gabriel.consultasmedicas.interfaces;
 
 import java.util.List;
 import java.util.Optional;
 
-import com.gabriel.consultasmedicas.dto.UsuarioRequestDTO;
+import com.gabriel.consultasmedicas.dto.UsuarioCadastroDTO;
 import com.gabriel.consultasmedicas.dto.UsuarioResponseDTO;
+import com.gabriel.consultasmedicas.model.TipoUsuario;
 import com.gabriel.consultasmedicas.model.Usuario;
 
+/**
+ * Interface que define as operações de lógica de negócio para a entidade Usuario.
+ * Isso garante o desacoplamento e facilita a troca de implementações (Service).
+ */
 public interface IUsuarioService {
-    
-    // NOVO: Registro usando DTO
-    UsuarioResponseDTO criar(UsuarioRequestDTO request);
-    
-    // NOVO: Busca por email (para segurança)
+
+    // Método para registrar um novo usuário no sistema
+    UsuarioResponseDTO criar(UsuarioCadastroDTO requestDTO);
+
+    // Método usado pelo Spring Security para buscar um usuário pelo email
     Optional<Usuario> buscarPorEmail(String email);
-    
-    // NOVO: Busca por tipo (para listagens)
-    List<UsuarioResponseDTO> buscarPorTipo(String tipo);
-    
-    // NOVO: Remover
+
+    // Método para buscar usuários por tipo (ex: listar todos os ADMINs)
+    List<UsuarioResponseDTO> buscarPorTipo(TipoUsuario tipo);
+
+    // Método para remover um usuário pelo ID
     void remover(Long id);
     
-    // Remova: Usuario cadastrarUsuario(Usuario usuario);
-    // Remova: List<Usuario> listarTodos();
-    // Remova: Usuario buscarPorId(Long id);
-    // Remova: Usuario salvar(Usuario usuario);
-    // Remova: Usuario registrar(Usuario usuario);
-    // Remova: Usuario autenticar(String email, String senha);
+    // Futuro: Adicionar métodos de atualização e busca por ID aqui.
 }
