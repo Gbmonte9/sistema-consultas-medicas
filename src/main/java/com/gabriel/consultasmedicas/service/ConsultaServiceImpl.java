@@ -27,166 +27,164 @@ public class ConsultaServiceImpl implements IConsultaService {
     private final MedicoRepository medicoRepository;
     private final PacienteRepository pacienteRepository;
 
-    public ConsultaServiceImpl(ConsultaRepository consultaRepository, MedicoRepository medicoRepository, PacienteRepository pacienteRepository) {
+    public ConsultaServiceImpl(ConsultaRepository consultaRepository,
+                               MedicoRepository medicoRepository,
+                               PacienteRepository pacienteRepository) {
         this.consultaRepository = consultaRepository;
         this.medicoRepository = medicoRepository;
         this.pacienteRepository = pacienteRepository;
     }
 
-    // -----------------------------------------------------------------------------------
-    // MÉTODO PRINCIPAL: AGENDAMENTO
-    // -----------------------------------------------------------------------------------
+    // ------------------- AGENDAMENTO -------------------
 
     @Override
     @Transactional
     public ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto) {
-        // 1. Validação de Entidades (Médico e Paciente)
         Medico medico = medicoRepository.findById(dto.getMedicoId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
-        
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
         Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
 
-        // 2. Regra de Negócio: Validação de Data/Hora
         LocalDateTime dataHora = dto.getDataHora();
-        
-        // Exemplo: Consultas devem ser agendadas com pelo menos 30 minutos de antecedência
-        if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A consulta deve ser agendada com no mínimo 30 minutos de antecedência.");
-        }
-
-        // 3. Regra de Negócio: Verificação de Disponibilidade do Médico
-        // Assumindo que a duração padrão da consulta é 30 minutos
         LocalDateTime fimConsulta = dataHora.plusMinutes(30);
 
-        Optional<Consulta> consultaExistente = consultaRepository.checarDisponibilidade(
-            medico.getId(), 
-            dataHora, 
-            fimConsulta
-        );
+        if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A consulta deve ser agendada com no mínimo 30 minutos de antecedência.");
+        }
 
-        if (consultaExistente.isPresent()) {
+        List<Consulta> conflitos = consultaRepository.checarDisponibilidade(medico.getId(), dataHora, fimConsulta);
+        if (!conflitos.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O médico já possui uma consulta marcada para este horário.");
         }
-        
-        // 4. Mapeamento DTO para Entidade
+
         Consulta novaConsulta = new Consulta();
         novaConsulta.setMedico(medico);
         novaConsulta.setPaciente(paciente);
         novaConsulta.setDataHora(dataHora);
-        novaConsulta.setStatus(StatusConsulta.AGENDADA); // Status inicial
-        
-        // 5. Salva a consulta
-        Consulta consultaSalva = consultaRepository.save(novaConsulta);
+        novaConsulta.setStatus(StatusConsulta.AGENDADA);
 
-        // 6. Retorna o DTO de Resposta
+        Consulta consultaSalva = consultaRepository.save(novaConsulta);
         return toResponseDTO(consultaSalva);
     }
 
-    // -----------------------------------------------------------------------------------
-    // MÉTODOS DE MANIPULAÇÃO DE STATUS
-    // -----------------------------------------------------------------------------------
-
-    @Override
-    @Transactional
-    public ConsultaResponseDTO atualizarStatus(Long id, StatusConsulta novoStatus) {
-        Consulta consulta = consultaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
-
-        // Regra de Negócio: Validação de transição de status (Exemplo: não pode ir de CANCELADA para AGENDADA)
-        // Implementar lógica de transição se necessário. Por simplicidade, permitimos.
-        
-        consulta.setStatus(novoStatus);
-        
-        return toResponseDTO(consultaRepository.save(consulta));
-    }
+    // ------------------- CANCELAMENTO E FINALIZAÇÃO -------------------
 
     @Override
     @Transactional
     public void cancelar(Long id) {
         Consulta consulta = consultaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para cancelamento."));
-
-        // Regra de Negócio: Não permite cancelar consultas já realizadas
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         if (consulta.getStatus() == StatusConsulta.REALIZADA) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas já realizadas não podem ser canceladas.");
         }
-        
         consulta.setStatus(StatusConsulta.CANCELADA);
         consultaRepository.save(consulta);
     }
-    
-    // -----------------------------------------------------------------------------------
-    // MÉTODOS DE BUSCA E LISTAGEM
-    // -----------------------------------------------------------------------------------
+
+    @Override
+    @Transactional
+    public void finalizar(Long id) {
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
+        consulta.setStatus(StatusConsulta.REALIZADA);
+        consultaRepository.save(consulta);
+    }
+
+    @Override
+    @Transactional
+    public ConsultaResponseDTO atualizarStatus(Long id, StatusConsulta novoStatus) {
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
+        consulta.setStatus(novoStatus);
+        return toResponseDTO(consultaRepository.save(consulta));
+    }
+
+    // ------------------- BUSCAS -------------------
 
     @Override
     public ConsultaResponseDTO buscarPorId(Long id) {
         Consulta consulta = consultaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         return toResponseDTO(consulta);
     }
 
     @Override
     public List<ConsultaResponseDTO> listarTodas() {
         return consultaRepository.findAll().stream()
-            .map(this::toResponseDTO)
-            .collect(Collectors.toList());
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<ConsultaResponseDTO> listarPorMedicoId(Long medicoId) {
-        List<Consulta> consultas = consultaRepository.findByMedicoId(medicoId);
-        return consultas.stream()
-            .map(this::toResponseDTO)
-            .collect(Collectors.toList());
+        return consultaRepository.findByMedicoId(medicoId).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ConsultaResponseDTO> listarPorPacienteId(Long pacienteId) {
-        List<Consulta> consultas = consultaRepository.findByPacienteId(pacienteId);
-        return consultas.stream()
-            .map(this::toResponseDTO)
-            .collect(Collectors.toList());
+        return consultaRepository.findByPacienteId(pacienteId).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------------------------------------------
-    // MÉTODOS AUXILIARES: DTO Mappers
-    // -----------------------------------------------------------------------------------
+    @Override
+    public List<ConsultaResponseDTO> listarPorMedico(Long medicoId) {
+        return listarPorMedicoId(medicoId);
+    }
+
+    @Override
+    public List<ConsultaResponseDTO> listarPorPaciente(Long pacienteId) {
+        return listarPorPacienteId(pacienteId);
+    }
+
+    @Override
+    public List<ConsultaResponseDTO> listarPorMedicoEStatus(Long medicoId, StatusConsulta status) {
+        return consultaRepository.findByMedicoIdAndStatus(medicoId, status).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ConsultaResponseDTO> listarPorPacienteEStatus(Long pacienteId, StatusConsulta status) {
+        return consultaRepository.findByPacienteIdAndStatus(pacienteId, status).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void remover(Long id) {
+        if (!consultaRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para remoção.");
+        }
+        consultaRepository.deleteById(id);
+    }
+
+    // ------------------- DTO MAPPER -------------------
 
     private ConsultaResponseDTO toResponseDTO(Consulta consulta) {
+        ConsultaResponseDTO.MedicoConsultaDTO medicoDTO = ConsultaResponseDTO.MedicoConsultaDTO.builder()
+                .id(consulta.getMedico().getId())
+                .nome(consulta.getMedico().getUsuario().getNome())
+                .especialidade(consulta.getMedico().getEspecialidade())
+                .crm(consulta.getMedico().getCrm())
+                .build();
+
+        ConsultaResponseDTO.PacienteConsultaDTO pacienteDTO = ConsultaResponseDTO.PacienteConsultaDTO.builder()
+                .id(consulta.getPaciente().getId())
+                .nome(consulta.getPaciente().getUsuario().getNome())
+                .cpf(consulta.getPaciente().getCpf())
+                .build();
+
         return ConsultaResponseDTO.builder()
-            .id(consulta.getId())
-            .dataHora(consulta.getDataHora())
-            .status(consulta.getStatus())
-            .medicoId(consulta.getMedico().getId())
-            .pacienteId(consulta.getPaciente().getId())
-            .nomeMedico(consulta.getMedico().getUsuario().getNome())
-            .nomePaciente(consulta.getPaciente().getUsuario().getNome())
-            .build();
+                .id(consulta.getId())
+                .dataHora(consulta.getDataHora())
+                .status(consulta.getStatus())
+                .medico(medicoDTO)
+                .paciente(pacienteDTO)
+                .build();
     }
-
-	@Override
-	public List<ConsultaResponseDTO> listarPorMedico(Long medicoId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<ConsultaResponseDTO> listarPorPaciente(Long pacienteId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<ConsultaResponseDTO> listarPorMedicoEStatus(Long medicoId, StatusConsulta status) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<ConsultaResponseDTO> listarPorPacienteEStatus(Long pacienteId, StatusConsulta status) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

@@ -1,6 +1,7 @@
 package com.gabriel.consultasmedicas.interfaces;
 
 import com.gabriel.consultasmedicas.dto.auth.AuthRequestDTO;
+import com.gabriel.consultasmedicas.model.Usuario;
 
 /**
  * Interface que define o contrato para a lógica de autenticação e segurança.
@@ -14,4 +15,11 @@ public interface IAuthService {
      * @return O Token JWT (String).
      */
     String autenticarEGerarToken(AuthRequestDTO requestDTO);
+
+	/**
+	 * Autenticação básica sem Spring Security.
+	 * @param requestDTO DTO com email e senha
+	 * @return Usuário autenticado ou lança exceção se inválido
+	 */
+	Usuario autenticar(AuthRequestDTO requestDTO);
 }

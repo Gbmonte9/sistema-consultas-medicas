@@ -17,4 +17,34 @@ public class AuthRequestDTO {
 
     @NotBlank(message = "A senha é obrigatória")
     private String senha;
+
+	public AuthRequestDTO(
+			@NotBlank(message = "O email é obrigatório") @Email(message = "Formato de email inválido") String email,
+			@NotBlank(message = "A senha é obrigatória") String senha) {
+		super();
+		this.email = email;
+		this.senha = senha;
+	}
+
+	public AuthRequestDTO() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getSenha() {
+		return senha;
+	}
+
+	public void setSenha(String senha) {
+		this.senha = senha;
+	}	
+
 }

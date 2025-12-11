@@ -3,36 +3,36 @@ package com.gabriel.consultasmedicas.dto;
 import java.time.LocalDateTime;
 
 import com.gabriel.consultasmedicas.model.StatusConsulta;
-
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class ConsultaResponseDTO {
 
     private Long id;
     private LocalDateTime dataHora;
     private StatusConsulta status;
-    
-    // Usamos DTOs aninhados para expor apenas o necessário do Médico e Paciente
     private MedicoConsultaDTO medico;
     private PacienteConsultaDTO paciente;
-    
-    // -----------------------------------------------------------------------------------
-    // DTOs Aninhados: Mostram apenas nome/especialidade/crm ou nome/cpf do paciente
-    // -----------------------------------------------------------------------------------
 
+    // -----------------------------------------------------------------------------------
+    // DTOs Aninhados: Mostram apenas os dados necessários do Médico e Paciente
+    // -----------------------------------------------------------------------------------
     @Data
+    @Builder
     public static class MedicoConsultaDTO {
         private Long id;
-        private String nome; // Nome do usuário associado ao médico
+        private String nome;
         private String especialidade;
         private String crm;
     }
 
     @Data
+    @Builder
     public static class PacienteConsultaDTO {
         private Long id;
-        private String nome; // Nome do usuário associado ao paciente
+        private String nome;
         private String cpf;
     }
 }

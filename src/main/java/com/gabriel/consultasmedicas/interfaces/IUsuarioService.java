@@ -9,22 +9,50 @@ import com.gabriel.consultasmedicas.model.TipoUsuario;
 import com.gabriel.consultasmedicas.model.Usuario;
 
 /**
- * Interface que define as operações de lógica de negócio para a entidade Usuario.
- * Isso garante o desacoplamento e facilita a troca de implementações (Service).
+ * Interface que define o contrato de regras de negócio para a entidade Usuario.
+ * Mantém o desacoplamento da camada Controller, permitindo fácil manutenção e troca de implementações.
  */
 public interface IUsuarioService {
 
-    // Método para registrar um novo usuário no sistema
+    // -----------------------------------------------------------------------------------
+    // CRUD (Create, Read, Update, Delete)
+    // -----------------------------------------------------------------------------------
+
+    /**
+     * Registra um novo usuário no sistema.
+     */
     UsuarioResponseDTO criar(UsuarioCadastroDTO requestDTO);
 
-    // Método usado pelo Spring Security para buscar um usuário pelo email
+    /**
+     * Busca um usuário pelo ID.
+     */
+    UsuarioResponseDTO buscarPorId(Long id);
+
+    /**
+     * Lista todos os usuários cadastrados.
+     */
+    List<UsuarioResponseDTO> listarTodos();
+
+    /**
+     * Remove um usuário pelo ID.
+     */
+    void remover(Long id);
+
+    // -----------------------------------------------------------------------------------
+    // CONSULTAS ESPECÍFICAS
+    // -----------------------------------------------------------------------------------
+
+    /**
+     * Busca um usuário pelo e-mail (usado principalmente pelo Spring Security).
+     */
     Optional<Usuario> buscarPorEmail(String email);
 
-    // Método para buscar usuários por tipo (ex: listar todos os ADMINs)
+    /**
+     * Lista usuários filtrando por tipo (ex.: ADMIN, PACIENTE, MEDICO).
+     */
     List<UsuarioResponseDTO> buscarPorTipo(TipoUsuario tipo);
 
-    // Método para remover um usuário pelo ID
-    void remover(Long id);
-    
-    // Futuro: Adicionar métodos de atualização e busca por ID aqui.
+    // -----------------------------------------------------------------------------------
+    // Futuro: adicionar método de atualização caso necessário.
+    // -----------------------------------------------------------------------------------
 }

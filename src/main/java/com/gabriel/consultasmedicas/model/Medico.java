@@ -34,4 +34,52 @@ public class Medico {
     @OneToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+
+	public Medico() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public Medico(Long id, String crm, String especialidade, Usuario usuario) {
+		super();
+		this.id = id;
+		this.crm = crm;
+		this.especialidade = especialidade;
+		this.usuario = usuario;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getCrm() {
+		return crm;
+	}
+
+	public void setCrm(String crm) {
+		this.crm = crm;
+	}
+
+	public String getEspecialidade() {
+		return especialidade;
+	}
+
+	public void setEspecialidade(String especialidade) {
+		this.especialidade = especialidade;
+	}
+
+	public Usuario getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
+
+	
+    
 }

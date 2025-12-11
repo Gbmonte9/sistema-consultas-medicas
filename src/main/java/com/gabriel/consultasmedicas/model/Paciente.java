@@ -34,4 +34,9 @@ public class Paciente {
     @OneToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+
+	public Object getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
