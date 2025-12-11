@@ -14,29 +14,27 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "pacientes")
-@Data // Gera Getters, Setters, toString, equals e hashCode
-@NoArgsConstructor // Construtor sem argumentos
-@AllArgsConstructor // Construtor com todos os argumentos
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Paciente {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    // CPF como chave única, comprimento 14 para incluir formatação (se necessário)
+    // CPF como chave única, comprimento 14 (para formatação, ex: 123.456.789-00)
     @Column(length = 14, nullable = false, unique = true)
     private String cpf;
     
     @Column(length = 20)
     private String telefone;
     
-    // Relacionamento OneToOne: Paciente é o dono da chave estrangeira (FK)
+    // Relacionamento OneToOne: Paciente possui um campo de FK (usuario_id) que aponta para Usuario
+    // Este é o lado "dono" (owning side) do relacionamento.
     @OneToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-	public Object getId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    // NENHUM MÉTODO MANUAL É NECESSÁRIO GRAÇAS AO LOMBOK
 }

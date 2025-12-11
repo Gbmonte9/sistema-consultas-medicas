@@ -12,6 +12,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	
 	Optional<Usuario> findByEmail(String email);
 	
-	// Novo método para buscar por TipoUsuario diretamente no banco
 	List<Usuario> findByTipo(TipoUsuario tipo);
 }

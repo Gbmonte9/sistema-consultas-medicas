@@ -48,10 +48,25 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         return toResponseDTO(usuarioSalvo);
     }
+    
+    @Override
+    public UsuarioResponseDTO buscarPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
 
+        return toResponseDTO(usuario);
+    }
+    
     @Override
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
+    }
+
+    @Override
+    public List<UsuarioResponseDTO> listarTodos() {
+        return usuarioRepository.findAll().stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -65,11 +80,38 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     @Transactional
-    public void remover(Long id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.");
+    public UsuarioResponseDTO atualizar(Long id, UsuarioCadastroDTO requestDTO) {
+        
+        Usuario usuarioExistente = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
+        
+        Optional<Usuario> emailExistente = usuarioRepository.findByEmail(requestDTO.getEmail());
+        if (emailExistente.isPresent() && !emailExistente.get().getId().equals(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado por outro usuário.");
         }
-        usuarioRepository.deleteById(id);
+        
+        usuarioExistente.setNome(requestDTO.getNome());
+        usuarioExistente.setEmail(requestDTO.getEmail());
+        usuarioExistente.setTipo(requestDTO.getTipo());
+        
+        if (requestDTO.getSenha() != null && !requestDTO.getSenha().isEmpty()) {
+            String novaSenhaCriptografada = passwordEncoder.encode(requestDTO.getSenha());
+            usuarioExistente.setSenha(novaSenhaCriptografada);
+        }
+
+        Usuario usuarioAtualizado = usuarioRepository.save(usuarioExistente);
+
+        return toResponseDTO(usuarioAtualizado);
+    }
+
+    @Override
+    @Transactional
+    public void remover(Long id) {
+      
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
+
+        usuarioRepository.delete(usuario);
     }
 
     private UsuarioResponseDTO toResponseDTO(Usuario usuario) {

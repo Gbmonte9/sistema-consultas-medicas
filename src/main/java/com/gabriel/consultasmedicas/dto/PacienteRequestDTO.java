@@ -5,10 +5,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-/**
- * DTO de Requisição para Paciente.
- * Usado nos endpoints POST e PUT do PacienteController.
- */
 @Data
 public class PacienteRequestDTO {
 
@@ -23,6 +19,4 @@ public class PacienteRequestDTO {
     @Pattern(regexp = "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$", message = "Formato de telefone/celular inválido")
     private String telefone;
 
-    // Nota: Campos como 'nome' e 'email' do usuário associado
-    // serão atualizados separadamente através do UsuarioController, se necessário.
 }

@@ -3,7 +3,6 @@ package com.gabriel.consultasmedicas.service;
 import com.gabriel.consultasmedicas.dto.MedicoCadastroDTO;
 import com.gabriel.consultasmedicas.dto.MedicoResponseDTO;
 import com.gabriel.consultasmedicas.dto.UsuarioCadastroDTO;
-import com.gabriel.consultasmedicas.dto.UsuarioResponseDTO;
 import com.gabriel.consultasmedicas.interfaces.IMedicoService;
 import com.gabriel.consultasmedicas.interfaces.IUsuarioService;
 import com.gabriel.consultasmedicas.model.Medico;
@@ -17,13 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class MedicoServiceImpl implements IMedicoService {
 
     private final MedicoRepository medicoRepository;
-    private final IUsuarioService usuarioService; // Para criar a conta de login
+    private final IUsuarioService usuarioService; 
 
     public MedicoServiceImpl(MedicoRepository medicoRepository, IUsuarioService usuarioService) {
         this.medicoRepository = medicoRepository;
@@ -31,7 +31,7 @@ public class MedicoServiceImpl implements IMedicoService {
     }
 
     // -----------------------------------------------------------------------------------
-    // MÉTODOS DE CRIAÇÃO E ATUALIZAÇÃO
+    // CREATE
     // -----------------------------------------------------------------------------------
 
     @Override
@@ -42,32 +42,33 @@ public class MedicoServiceImpl implements IMedicoService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CRM já cadastrado.");
         }
         
-        // 2. Criação do Usuário base (Login/Senha/Nome/Email)
+        // 2. Criação do Usuário (Delegação)
         UsuarioCadastroDTO usuarioDto = new UsuarioCadastroDTO();
         usuarioDto.setNome(dto.getNome());
         usuarioDto.setEmail(dto.getEmail());
         usuarioDto.setSenha(dto.getSenha());
         usuarioDto.setTipo(TipoUsuario.MEDICO);
         
-        // Chama o UsuarioService para criptografar a senha e salvar o registro Usuario
-        UsuarioResponseDTO usuarioCriado = usuarioService.criar(usuarioDto);
+        usuarioService.criar(usuarioDto);
         
-        // 3. Busca a entidade Usuario salva para associar ao Medico
-        Usuario usuario = usuarioService.buscarPorEmail(usuarioCriado.getEmail())
-                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário base não encontrado após criação."));
+        // 3. Busca a entidade Usuario para associar
+        Usuario usuario = usuarioService.buscarPorEmail(dto.getEmail())
+                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Usuário base não encontrado após criação."));
         
-        // 4. Mapeamento DTO para Entidade Medico
+        // 4. Mapeamento e Salva o Medico
         Medico novoMedico = new Medico();
         novoMedico.setCrm(dto.getCrm());
         novoMedico.setEspecialidade(dto.getEspecialidade());
-        novoMedico.setUsuario(usuario); // Associa o registro Usuario
+        novoMedico.setUsuario(usuario); 
         
-        // 5. Salva o registro Medico
         Medico medicoSalvo = medicoRepository.save(novoMedico);
 
-        // 6. Retorna o DTO de Resposta
         return toResponseDTO(medicoSalvo);
     }
+
+    // -----------------------------------------------------------------------------------
+    // UPDATE
+    // -----------------------------------------------------------------------------------
 
     @Override
     @Transactional
@@ -75,20 +76,30 @@ public class MedicoServiceImpl implements IMedicoService {
         Medico medico = medicoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
 
-        // Atualiza apenas os campos específicos do Medico
+        // 1. Regra de Negócio: Checar se o novo CRM está em uso por OUTRO médico
+        Optional<Medico> crmExistente = medicoRepository.findByCrm(dto.getCrm());
+        if (crmExistente.isPresent() && !crmExistente.get().getId().equals(id)) {
+             throw new ResponseStatusException(HttpStatus.CONFLICT, "CRM já cadastrado por outro médico.");
+        }
+
+        // 2. Atualiza campos específicos do Medico
         medico.setCrm(dto.getCrm());
         medico.setEspecialidade(dto.getEspecialidade());
         
-        // Atualiza o nome e email no registro Usuario associado
+        // 3. DELEGA a atualização do Usuario para o Serviço responsável
         Usuario usuario = medico.getUsuario();
-        usuario.setNome(dto.getNome());
-        usuario.setEmail(dto.getEmail());
         
+        // O UsuarioService cuida de checar e-mail, nome e criptografia de senha.
+        usuarioService.atualizar(usuario.getId(), 
+                                 new UsuarioCadastroDTO(dto.getNome(), dto.getEmail(), dto.getSenha(), TipoUsuario.MEDICO));
+        
+        // 4. Salva o Medico
         return toResponseDTO(medicoRepository.save(medico));
     }
 
+
     // -----------------------------------------------------------------------------------
-    // MÉTODOS DE BUSCA E LISTAGEM
+    // READ (Buscas e Listagem)
     // -----------------------------------------------------------------------------------
 
     @Override
@@ -105,10 +116,8 @@ public class MedicoServiceImpl implements IMedicoService {
         return toResponseDTO(medico);
     }
 
-    // Método crucial para a tela de agendamento: Listar por Especialidade
     @Override
     public List<MedicoResponseDTO> buscarPorEspecialidade(String especialidade) {
-        // Assume-se que o MedicoRepository possui um método findByEspecialidade
         return medicoRepository.findByEspecialidade(especialidade).stream()
             .map(this::toResponseDTO)
             .collect(Collectors.toList());
@@ -122,7 +131,7 @@ public class MedicoServiceImpl implements IMedicoService {
     }
 
     // -----------------------------------------------------------------------------------
-    // MÉTODO DE REMOÇÃO
+    // DELETE
     // -----------------------------------------------------------------------------------
 
     @Override
@@ -134,7 +143,7 @@ public class MedicoServiceImpl implements IMedicoService {
         Long usuarioId = medico.getUsuario().getId();
         
         medicoRepository.delete(medico);
-        usuarioService.remover(usuarioId); // Remove o registro de login também
+        usuarioService.remover(usuarioId); // Remove o registro de login
     }
 
     // -----------------------------------------------------------------------------------
@@ -142,7 +151,6 @@ public class MedicoServiceImpl implements IMedicoService {
     // -----------------------------------------------------------------------------------
 
     private MedicoResponseDTO toResponseDTO(Medico medico) {
-        // Mapeia para o DTO de Resposta
         return MedicoResponseDTO.builder()
             .id(medico.getId())
             .crm(medico.getCrm())

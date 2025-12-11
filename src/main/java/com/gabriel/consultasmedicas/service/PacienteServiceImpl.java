@@ -3,7 +3,6 @@ package com.gabriel.consultasmedicas.service;
 import com.gabriel.consultasmedicas.dto.PacienteCadastroDTO;
 import com.gabriel.consultasmedicas.dto.PacienteResponseDTO;
 import com.gabriel.consultasmedicas.dto.UsuarioCadastroDTO;
-import com.gabriel.consultasmedicas.dto.UsuarioResponseDTO;
 import com.gabriel.consultasmedicas.interfaces.IPacienteService;
 import com.gabriel.consultasmedicas.interfaces.IUsuarioService;
 import com.gabriel.consultasmedicas.model.Paciente;
@@ -17,13 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class PacienteServiceImpl implements IPacienteService {
 
     private final PacienteRepository pacienteRepository;
-    private final IUsuarioService usuarioService; // Serviço de Usuário para criar a conta de login
+    private final IUsuarioService usuarioService; // Serviço de Usuário para gerenciar o login
 
     public PacienteServiceImpl(PacienteRepository pacienteRepository, IUsuarioService usuarioService) {
         this.pacienteRepository = pacienteRepository;
@@ -31,68 +31,76 @@ public class PacienteServiceImpl implements IPacienteService {
     }
 
     // -----------------------------------------------------------------------------------
-    // MÉTODOS DE CRIAÇÃO E ATUALIZAÇÃO
+    // CREATE
     // -----------------------------------------------------------------------------------
 
     @Override
     @Transactional
     public PacienteResponseDTO criar(PacienteCadastroDTO dto) {
+  
         // 1. Regra de Negócio: CPF deve ser único
         if (pacienteRepository.findByCpf(dto.getCpf()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado.");
         }
         
-        // 2. Criação do Usuário base (Login/Senha/Nome/Email)
+        // 2. Criação do DTO base para o Usuário
         UsuarioCadastroDTO usuarioDto = new UsuarioCadastroDTO();
         usuarioDto.setNome(dto.getNome());
         usuarioDto.setEmail(dto.getEmail());
         usuarioDto.setSenha(dto.getSenha());
         usuarioDto.setTipo(TipoUsuario.PACIENTE);
         
-        // Chama o UsuarioService para criptografar a senha e salvar o registro Usuario
-        UsuarioResponseDTO usuarioCriado = usuarioService.criar(usuarioDto);
+        // 3. Salva o Usuário (chamando o serviço que trata a criptografia e validações)
+        usuarioService.criar(usuarioDto);
         
-        // 3. Busca a entidade Usuario salva para associar ao Paciente
-        Usuario usuario = usuarioService.buscarPorEmail(usuarioCriado.getEmail())
-                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário base não encontrado após criação."));
+        // 4. Busca a entidade Usuario salva para associar ao Paciente
+        Usuario usuario = usuarioService.buscarPorEmail(dto.getEmail())
+                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Usuário base não encontrado após criação."));
         
-        // 4. Mapeamento DTO para Entidade Paciente
+        // 5. Mapeia e salva o Paciente
         Paciente novoPaciente = new Paciente();
         novoPaciente.setCpf(dto.getCpf());
         novoPaciente.setTelefone(dto.getTelefone());
-        novoPaciente.setUsuario(usuario); // Associa o registro Usuario
+        novoPaciente.setUsuario(usuario); 
         
-        // 5. Salva o registro Paciente
         Paciente pacienteSalvo = pacienteRepository.save(novoPaciente);
 
-        // 6. Retorna o DTO de Resposta
         return toResponseDTO(pacienteSalvo);
     }
+
+    // -----------------------------------------------------------------------------------
+    // UPDATE
+    // -----------------------------------------------------------------------------------
 
     @Override
     @Transactional
     public PacienteResponseDTO atualizar(Long id, PacienteCadastroDTO dto) {
         Paciente paciente = pacienteRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
+        
+        // 1. Checa se o novo CPF está em uso por OUTRO paciente
+        Optional<Paciente> cpfExistente = pacienteRepository.findByCpf(dto.getCpf());
+        if (cpfExistente.isPresent() && !cpfExistente.get().getId().equals(id)) {
+             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado por outro paciente.");
+        }
 
-        // Atualiza apenas os campos específicos do Paciente
+        // 2. Atualiza campos específicos do Paciente
         paciente.setCpf(dto.getCpf());
         paciente.setTelefone(dto.getTelefone());
         
-        // Atualiza o nome e email no registro Usuario associado
+        // 3. Atualiza o registro Usuario associado (delegação)
         Usuario usuario = paciente.getUsuario();
-        usuario.setNome(dto.getNome());
-        usuario.setEmail(dto.getEmail());
-        // A senha não deve ser atualizada aqui, mas sim em um endpoint separado.
         
-        // Nota: O UsuarioService não precisa ser chamado para o update do Usuario, pois o save
-        // do Paciente dentro da transação fará o update cascata no Usuario (depende da configuração do @OneToOne).
+        // O UsuarioService cuida de checar se o email está livre e da criptografia da senha, se fornecida.
+        usuarioService.atualizar(usuario.getId(), 
+                                 new UsuarioCadastroDTO(dto.getNome(), dto.getEmail(), dto.getSenha(), TipoUsuario.PACIENTE));
         
+        // 4. Salva o Paciente (garantindo persistência)
         return toResponseDTO(pacienteRepository.save(paciente));
     }
 
     // -----------------------------------------------------------------------------------
-    // MÉTODOS DE BUSCA E LISTAGEM
+    // READ (Buscas e Listagem)
     // -----------------------------------------------------------------------------------
 
     @Override
@@ -117,7 +125,7 @@ public class PacienteServiceImpl implements IPacienteService {
     }
 
     // -----------------------------------------------------------------------------------
-    // MÉTODO DE REMOÇÃO
+    // DELETE
     // -----------------------------------------------------------------------------------
 
     @Override
@@ -126,12 +134,11 @@ public class PacienteServiceImpl implements IPacienteService {
         Paciente paciente = pacienteRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado para remoção."));
         
-        // Nota: Dependendo das regras de CASCADE no seu modelo, a remoção do Paciente pode
-        // ou não remover o Usuario associado. Aqui, vamos garantir a remoção do Usuario.
+        // Remove o registro de login (Usuario) também para evitar órfãos.
         Long usuarioId = paciente.getUsuario().getId();
         
         pacienteRepository.delete(paciente);
-        usuarioService.remover(usuarioId); // Remove o registro de login também
+        usuarioService.remover(usuarioId);
     }
 
     // -----------------------------------------------------------------------------------

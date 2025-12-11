@@ -16,9 +16,6 @@ public class ConsultaResponseDTO {
     private MedicoConsultaDTO medico;
     private PacienteConsultaDTO paciente;
 
-    // -----------------------------------------------------------------------------------
-    // DTOs Aninhados: Mostram apenas os dados necessários do Médico e Paciente
-    // -----------------------------------------------------------------------------------
     @Data
     @Builder
     public static class MedicoConsultaDTO {
@@ -35,4 +32,5 @@ public class ConsultaResponseDTO {
         private String nome;
         private String cpf;
     }
+    
 }

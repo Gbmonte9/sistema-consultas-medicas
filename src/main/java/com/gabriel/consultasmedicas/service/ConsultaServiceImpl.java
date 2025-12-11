@@ -35,17 +35,17 @@ public class ConsultaServiceImpl implements IConsultaService {
         this.pacienteRepository = pacienteRepository;
     }
 
-    // ------------------- AGENDAMENTO -------------------
-
     @Override
     @Transactional
     public ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto) {
+ 
         Medico medico = medicoRepository.findById(dto.getMedicoId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
         Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
 
         LocalDateTime dataHora = dto.getDataHora();
+
         LocalDateTime fimConsulta = dataHora.plusMinutes(30);
 
         if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
@@ -68,16 +68,16 @@ public class ConsultaServiceImpl implements IConsultaService {
         return toResponseDTO(consultaSalva);
     }
 
-    // ------------------- CANCELAMENTO E FINALIZAÇÃO -------------------
-
     @Override
     @Transactional
     public void cancelar(Long id) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
+        
         if (consulta.getStatus() == StatusConsulta.REALIZADA) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas já realizadas não podem ser canceladas.");
         }
+        
         consulta.setStatus(StatusConsulta.CANCELADA);
         consultaRepository.save(consulta);
     }
@@ -87,7 +87,7 @@ public class ConsultaServiceImpl implements IConsultaService {
     public void finalizar(Long id) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
-        consulta.setStatus(StatusConsulta.REALIZADA);
+        consulta.setStatus(StatusConsulta.REALIZADA); 
         consultaRepository.save(consulta);
     }
 
@@ -99,8 +99,6 @@ public class ConsultaServiceImpl implements IConsultaService {
         consulta.setStatus(novoStatus);
         return toResponseDTO(consultaRepository.save(consulta));
     }
-
-    // ------------------- BUSCAS -------------------
 
     @Override
     public ConsultaResponseDTO buscarPorId(Long id) {
@@ -131,16 +129,6 @@ public class ConsultaServiceImpl implements IConsultaService {
     }
 
     @Override
-    public List<ConsultaResponseDTO> listarPorMedico(Long medicoId) {
-        return listarPorMedicoId(medicoId);
-    }
-
-    @Override
-    public List<ConsultaResponseDTO> listarPorPaciente(Long pacienteId) {
-        return listarPorPacienteId(pacienteId);
-    }
-
-    @Override
     public List<ConsultaResponseDTO> listarPorMedicoEStatus(Long medicoId, StatusConsulta status) {
         return consultaRepository.findByMedicoIdAndStatus(medicoId, status).stream()
                 .map(this::toResponseDTO)
@@ -157,13 +145,12 @@ public class ConsultaServiceImpl implements IConsultaService {
     @Override
     @Transactional
     public void remover(Long id) {
-        if (!consultaRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para remoção.");
-        }
-        consultaRepository.deleteById(id);
+        // Padrão de busca e exclusão (mais consistente)
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para remoção."));
+        
+        consultaRepository.delete(consulta);
     }
-
-    // ------------------- DTO MAPPER -------------------
 
     private ConsultaResponseDTO toResponseDTO(Consulta consulta) {
         ConsultaResponseDTO.MedicoConsultaDTO medicoDTO = ConsultaResponseDTO.MedicoConsultaDTO.builder()

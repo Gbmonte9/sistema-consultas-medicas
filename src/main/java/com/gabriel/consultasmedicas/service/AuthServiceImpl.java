@@ -5,6 +5,7 @@ import com.gabriel.consultasmedicas.interfaces.IAuthService;
 import com.gabriel.consultasmedicas.model.Usuario;
 import com.gabriel.consultasmedicas.repository.UsuarioRepository;
 
+import org.springframework.security.crypto.password.PasswordEncoder; 
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -13,34 +14,27 @@ import org.springframework.http.HttpStatus;
 public class AuthServiceImpl implements IAuthService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder; 
 
-    public AuthServiceImpl(UsuarioRepository usuarioRepository) {
+    public AuthServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Autenticação básica sem Spring Security.
-     * @param requestDTO DTO com email e senha
-     * @return Usuário autenticado ou lança exceção se inválido
-     */
     @Override
     public Usuario autenticar(AuthRequestDTO requestDTO) {
-        // Busca o usuário pelo email
         Usuario usuario = usuarioRepository.findByEmail(requestDTO.getEmail())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
 
-        // Verifica a senha (aqui assume senha em texto plano; se estiver criptografada, use BCrypt)
-        if (!usuario.getSenha().equals(requestDTO.getSenha())) {
+        if (!passwordEncoder.matches(requestDTO.getSenha(), usuario.getSenha())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
         }
 
-        // Retorna o usuário autenticado
         return usuario;
     }
-
-	@Override
-	public String autenticarEGerarToken(AuthRequestDTO requestDTO) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    
+    @Override
+    public String autenticarEGerarToken(AuthRequestDTO requestDTO) {
+        throw new UnsupportedOperationException("A funcionalidade de geração de token JWT não está implementada nesta versão do serviço de autenticação.");
+    }
 }

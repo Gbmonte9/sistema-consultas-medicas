@@ -16,21 +16,19 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "historicos")
-@Data // Gera Getters, Setters, toString, equals e hashCode
-@NoArgsConstructor // Construtor sem argumentos
-@AllArgsConstructor // Construtor com todos os argumentos
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Historico {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    // Relacionamento: Muitos Históricos para Uma Consulta
     @ManyToOne
     @JoinColumn(name = "consulta_id", nullable = false)
     private Consulta consulta; // Necessita da classe Consulta.java
 
-    // TEXT para campos potencialmente longos (observações/anotações)
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
