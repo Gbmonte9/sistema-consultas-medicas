@@ -1,21 +1,22 @@
 package com.gabriel.consultasmedicas.interfaces;
 
 import java.util.List;
-import com.gabriel.consultasmedicas.dto.PacienteRequestDTO;
+import com.gabriel.consultasmedicas.dto.PacienteCadastroDTO; // NOVO IMPORT!
 import com.gabriel.consultasmedicas.dto.PacienteResponseDTO;
 import jakarta.validation.Valid;
 
 public interface IPacienteService {
-    
-    PacienteResponseDTO criar(@Valid PacienteRequestDTO requestDTO);
+	
+	PacienteResponseDTO criar(@Valid PacienteCadastroDTO dto);
 
-    PacienteResponseDTO buscarPorId(Long id);
+	PacienteResponseDTO buscarPorId(Long id);
 
-    PacienteResponseDTO buscarPorCpf(String cpf);
+	PacienteResponseDTO buscarPorCpf(String cpf);
 
-    PacienteResponseDTO atualizar(Long id, @Valid PacienteRequestDTO requestDTO);
+	PacienteResponseDTO atualizar(Long id, @Valid PacienteCadastroDTO dto);
 
-    List<PacienteResponseDTO> listarTodos();
+	List<PacienteResponseDTO> listarTodos();
 
-    void remover(Long id);
+	void remover(Long id);
+
 }

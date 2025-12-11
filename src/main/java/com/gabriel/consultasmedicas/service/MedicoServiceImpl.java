@@ -30,19 +30,14 @@ public class MedicoServiceImpl implements IMedicoService {
         this.usuarioService = usuarioService;
     }
 
-    // -----------------------------------------------------------------------------------
-    // CREATE
-    // -----------------------------------------------------------------------------------
-
     @Override
     @Transactional
     public MedicoResponseDTO criar(MedicoCadastroDTO dto) {
-        // 1. Regra de Negócio: CRM deve ser único
+       
         if (medicoRepository.findByCrm(dto.getCrm()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CRM já cadastrado.");
         }
         
-        // 2. Criação do Usuário (Delegação)
         UsuarioCadastroDTO usuarioDto = new UsuarioCadastroDTO();
         usuarioDto.setNome(dto.getNome());
         usuarioDto.setEmail(dto.getEmail());
@@ -51,11 +46,9 @@ public class MedicoServiceImpl implements IMedicoService {
         
         usuarioService.criar(usuarioDto);
         
-        // 3. Busca a entidade Usuario para associar
         Usuario usuario = usuarioService.buscarPorEmail(dto.getEmail())
                                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Usuário base não encontrado após criação."));
         
-        // 4. Mapeamento e Salva o Medico
         Medico novoMedico = new Medico();
         novoMedico.setCrm(dto.getCrm());
         novoMedico.setEspecialidade(dto.getEspecialidade());
@@ -66,41 +59,28 @@ public class MedicoServiceImpl implements IMedicoService {
         return toResponseDTO(medicoSalvo);
     }
 
-    // -----------------------------------------------------------------------------------
-    // UPDATE
-    // -----------------------------------------------------------------------------------
-
+ 
     @Override
     @Transactional
     public MedicoResponseDTO atualizar(Long id, MedicoCadastroDTO dto) {
         Medico medico = medicoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
 
-        // 1. Regra de Negócio: Checar se o novo CRM está em uso por OUTRO médico
         Optional<Medico> crmExistente = medicoRepository.findByCrm(dto.getCrm());
         if (crmExistente.isPresent() && !crmExistente.get().getId().equals(id)) {
              throw new ResponseStatusException(HttpStatus.CONFLICT, "CRM já cadastrado por outro médico.");
         }
 
-        // 2. Atualiza campos específicos do Medico
         medico.setCrm(dto.getCrm());
         medico.setEspecialidade(dto.getEspecialidade());
         
-        // 3. DELEGA a atualização do Usuario para o Serviço responsável
         Usuario usuario = medico.getUsuario();
         
-        // O UsuarioService cuida de checar e-mail, nome e criptografia de senha.
         usuarioService.atualizar(usuario.getId(), 
                                  new UsuarioCadastroDTO(dto.getNome(), dto.getEmail(), dto.getSenha(), TipoUsuario.MEDICO));
         
-        // 4. Salva o Medico
         return toResponseDTO(medicoRepository.save(medico));
     }
-
-
-    // -----------------------------------------------------------------------------------
-    // READ (Buscas e Listagem)
-    // -----------------------------------------------------------------------------------
 
     @Override
     public MedicoResponseDTO buscarPorId(Long id) {
@@ -130,10 +110,6 @@ public class MedicoServiceImpl implements IMedicoService {
             .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------------------------------------------
-    // DELETE
-    // -----------------------------------------------------------------------------------
-
     @Override
     @Transactional
     public void remover(Long id) {
@@ -143,12 +119,8 @@ public class MedicoServiceImpl implements IMedicoService {
         Long usuarioId = medico.getUsuario().getId();
         
         medicoRepository.delete(medico);
-        usuarioService.remover(usuarioId); // Remove o registro de login
+        usuarioService.remover(usuarioId); 
     }
-
-    // -----------------------------------------------------------------------------------
-    // MÉTODOS AUXILIARES: DTO Mappers
-    // -----------------------------------------------------------------------------------
 
     private MedicoResponseDTO toResponseDTO(Medico medico) {
         return MedicoResponseDTO.builder()

@@ -1,5 +1,6 @@
 package com.gabriel.consultasmedicas.controller;
 
+import com.gabriel.consultasmedicas.dto.PacienteCadastroDTO;
 import com.gabriel.consultasmedicas.dto.PacienteRequestDTO;
 import com.gabriel.consultasmedicas.dto.PacienteResponseDTO;
 import com.gabriel.consultasmedicas.interfaces.IPacienteService;
@@ -21,7 +22,8 @@ public class PacienteController {
     }
 
     @PostMapping
-    public ResponseEntity<PacienteResponseDTO> criar(@Valid @RequestBody PacienteRequestDTO requestDTO) {
+    public ResponseEntity<PacienteResponseDTO> criar(@Valid @RequestBody PacienteCadastroDTO requestDTO) { 
+        // Certifique-se de importar o PacienteCadastroDTO
         PacienteResponseDTO response = pacienteService.criar(requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED); 
     }
@@ -39,7 +41,7 @@ public class PacienteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PacienteResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody PacienteRequestDTO requestDTO) {
+    public ResponseEntity<PacienteResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody PacienteCadastroDTO requestDTO) {
         PacienteResponseDTO response = pacienteService.atualizar(id, requestDTO);
         return ResponseEntity.ok(response);
     }

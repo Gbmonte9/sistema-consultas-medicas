@@ -9,7 +9,6 @@ import com.gabriel.consultasmedicas.model.StatusConsulta;
 
 public interface IConsultaService {
     
-    
     ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto);
 
     void cancelar(Long id);
@@ -24,15 +23,11 @@ public interface IConsultaService {
 
     List<ConsultaResponseDTO> listarTodas();
 
-    List<ConsultaResponseDTO> listarPorMedico(Long medicoId);
+    List<ConsultaResponseDTO> listarPorMedicoId(Long medicoId);
 
     List<ConsultaResponseDTO> listarPorMedicoEStatus(Long medicoId, StatusConsulta status);
 
-    List<ConsultaResponseDTO> listarPorPaciente(Long pacienteId);
+    List<ConsultaResponseDTO> listarPorPacienteId(Long pacienteId);
 
     List<ConsultaResponseDTO> listarPorPacienteEStatus(Long pacienteId, StatusConsulta status);
-
-	List<ConsultaResponseDTO> listarPorMedicoId(Long medicoId);
-
-	List<ConsultaResponseDTO> listarPorPacienteId(Long pacienteId);
 }
