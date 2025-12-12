@@ -45,14 +45,15 @@ public class ConsultaServiceImpl implements IConsultaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
 
         LocalDateTime dataHora = dto.getDataHora();
-
-        LocalDateTime fimConsulta = dataHora.plusMinutes(30);
+        
+        LocalDateTime fimConsulta = dataHora.plusMinutes(30); 
 
         if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "A consulta deve ser agendada com no mínimo 30 minutos de antecedência.");
         }
 
+        // 1. Checa a disponibilidade usando a query JPQL que corrigimos
         List<Consulta> conflitos = consultaRepository.checarDisponibilidade(medico.getId(), dataHora, fimConsulta);
         if (!conflitos.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O médico já possui uma consulta marcada para este horário.");
@@ -62,6 +63,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         novaConsulta.setMedico(medico);
         novaConsulta.setPaciente(paciente);
         novaConsulta.setDataHora(dataHora);
+        novaConsulta.setDataFim(fimConsulta); 
         novaConsulta.setStatus(StatusConsulta.AGENDADA);
 
         Consulta consultaSalva = consultaRepository.save(novaConsulta);
@@ -87,7 +89,7 @@ public class ConsultaServiceImpl implements IConsultaService {
     public void finalizar(Long id) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
-        consulta.setStatus(StatusConsulta.REALIZADA); 
+        consulta.setStatus(StatusConsulta.REALIZADA);    
         consultaRepository.save(consulta);
     }
 
@@ -169,6 +171,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         return ConsultaResponseDTO.builder()
                 .id(consulta.getId())
                 .dataHora(consulta.getDataHora())
+                .dataFim(consulta.getDataFim()) 
                 .status(consulta.getStatus())
                 .medico(medicoDTO)
                 .paciente(pacienteDTO)

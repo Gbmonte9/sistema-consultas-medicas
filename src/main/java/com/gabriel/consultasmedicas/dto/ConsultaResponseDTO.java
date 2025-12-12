@@ -12,6 +12,7 @@ public class ConsultaResponseDTO {
 
     private Long id;
     private LocalDateTime dataHora;
+    private LocalDateTime dataFim; 
     private StatusConsulta status;
     private MedicoConsultaDTO medico;
     private PacienteConsultaDTO paciente;
