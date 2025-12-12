@@ -1,60 +1,23 @@
-# 🗄️ Modelagem do Banco de Dados
+# Modelagem do Banco de Dados (PostgreSQL)
 
-O banco de dados será relacional (PostgreSQL) e seguirá o modelo abaixo:
+O sistema utiliza um banco de dados relacional (PostgreSQL) para persistência. O modelo foi desenhado para suportar o agendamento e o relacionamento entre Médicos e Pacientes.
 
----
 
-## 🧬 Tabelas
 
-### `usuarios`
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| id | SERIAL (PK) | Identificador |
-| nome | VARCHAR(100) | Nome do usuário |
-| email | VARCHAR(100) | E-mail |
-| senha | VARCHAR(255) | Senha criptografada |
-| tipo | ENUM('ADMIN', 'MEDICO', 'PACIENTE') | Tipo de usuário |
+## 1. Entidades e Relacionamentos
 
----
+### Tabela: usuarios
+* **Descrição:** Armazena dados de login e informações básicas (nome, email, etc.) para todos os tipos de acesso (Admin, Médico, Paciente).
+* **Colunas Principais:** `id` (PK), `nome`, `email`, `senha`, `role` (Admin/Medico/Paciente).
 
-### `medicos`
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| id | SERIAL (PK) | Identificador |
-| crm | VARCHAR(50) | Número do CRM |
-| especialidade | VARCHAR(100) | Especialidade médica |
-| usuario_id | INT (FK) | Chave estrangeira para `usuarios` |
+### Tabela: medicos
+* **Descrição:** Informações específicas dos médicos.
+* **Colunas Principais:** `id` (PK), `usuario_id` (FK para `usuarios`), `crm`, `especialidade`.
 
----
+### Tabela: pacientes
+* **Descrição:** Informações específicas dos pacientes.
+* **Colunas Principais:** `id` (PK), `usuario_id` (FK para `usuarios`), `cpf`, `data_nascimento`.
 
-### `pacientes`
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| id | SERIAL (PK) | Identificador |
-| cpf | VARCHAR(14) | CPF do paciente |
-| telefone | VARCHAR(20) | Telefone de contato |
-| usuario_id | INT (FK) | Chave estrangeira para `usuarios` |
-
----
-
-### `consultas`
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| id | SERIAL (PK) | Identificador |
-| medico_id | INT (FK) | Médico responsável |
-| paciente_id | INT (FK) | Paciente agendado |
-| data_hora | TIMESTAMP | Data e hora da consulta |
-| status | ENUM('AGENDADA', 'CANCELADA', 'REALIZADA') | Situação atual |
-
----
-
-### `historicos`
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| id | SERIAL (PK) | Identificador |
-| consulta_id | INT (FK) | Consulta relacionada |
-| observacoes | TEXT | Observações médicas |
-| receita | TEXT | Receita ou tratamento |
-| data_registro | TIMESTAMP | Data do registro |
-
----
+### Tabela: consultas
+* **Descrição:** Registros de agendamentos.
+* **Colunas Principais:** `id` (PK), `medico_id` (FK), `paciente_id` (FK), `data_hora` (Início), `data_fim` (Fim), `status` (AGENDADA, CANCELADA, REALIZADA).
