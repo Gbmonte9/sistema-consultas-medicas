@@ -2,6 +2,8 @@ package com.gabriel.consultasmedicas.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,17 +11,17 @@ import org.springframework.data.repository.query.Param;
 import com.gabriel.consultasmedicas.model.Consulta;
 import com.gabriel.consultasmedicas.model.StatusConsulta;
 
-public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
+public interface ConsultaRepository extends JpaRepository<Consulta, UUID> {
 
-    List<Consulta> findByMedicoIdAndStatus(Long medicoId, StatusConsulta status);
+    List<Consulta> findByMedicoIdAndStatus(UUID medicoId, StatusConsulta status);
 
-    List<Consulta> findByPacienteIdAndStatus(Long pacienteId, StatusConsulta status);
+    List<Consulta> findByPacienteIdAndStatus(UUID pacienteId, StatusConsulta status);
 
-    List<Consulta> findByMedicoIdAndDataHora(Long medicoId, LocalDateTime dataHora);
+    List<Consulta> findByMedicoIdAndDataHora(UUID medicoId, LocalDateTime dataHora);
     
-    List<Consulta> findByMedicoId(Long medicoId);    
+    List<Consulta> findByMedicoId(UUID medicoId);    
     
-    List<Consulta> findByPacienteId(Long pacienteId);
+    List<Consulta> findByPacienteId(UUID pacienteId);
     
    
     @Query("SELECT c FROM Consulta c " +
@@ -28,7 +30,7 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
            "AND c.dataHora < :dataHoraFim " + 
            "AND c.dataFim > :dataHoraInicio")
     List<Consulta> checarDisponibilidade(
-        @Param("medicoId") Long medicoId, 
+        @Param("medicoId") UUID medicoId, 
         @Param("dataHoraInicio") LocalDateTime dataHoraInicio, 
         @Param("dataHoraFim") LocalDateTime dataHoraFim
     );

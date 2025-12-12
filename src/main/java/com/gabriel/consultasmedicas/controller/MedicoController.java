@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID; // 🚨 NOVO: Importação do UUID
 
 @RestController
 @RequestMapping("/api/medicos") 
@@ -22,13 +23,14 @@ public class MedicoController {
 
     @PostMapping
     public ResponseEntity<MedicoResponseDTO> criar(@Valid @RequestBody MedicoCadastroDTO requestDTO) {
+        // Assume que MedicoCadastroDTO lida corretamente com as referências (ex: usuarioId) como UUID, se necessário.
         MedicoResponseDTO response = medicoService.criar(requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED); 
     }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<MedicoResponseDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<MedicoResponseDTO> buscarPorId(@PathVariable UUID id) {
         MedicoResponseDTO response = medicoService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
@@ -46,13 +48,13 @@ public class MedicoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MedicoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody MedicoCadastroDTO requestDTO) {
+    public ResponseEntity<MedicoResponseDTO> atualizar(@PathVariable UUID id, @Valid @RequestBody MedicoCadastroDTO requestDTO) {
         MedicoResponseDTO response = medicoService.atualizar(id, requestDTO);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remover(@PathVariable Long id) {
+    public ResponseEntity<Void> remover(@PathVariable UUID id) {
         medicoService.remover(id);
         return ResponseEntity.noContent().build();
     }

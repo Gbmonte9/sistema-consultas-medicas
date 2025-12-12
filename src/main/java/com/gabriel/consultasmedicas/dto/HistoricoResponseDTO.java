@@ -5,14 +5,18 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID; 
+
 @Data
 @Builder
 public class HistoricoResponseDTO {
 
-    private Long id;
-    private Long consultaId; 
+    private UUID id;
+    
+    private UUID consultaId; 
+    
     private String observacoes;
     private String receita;
-    private LocalDateTime dataRegistro; 
+    private LocalDateTime dataRegistro;
     
 }

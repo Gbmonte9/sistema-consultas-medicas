@@ -6,11 +6,14 @@ import com.gabriel.consultasmedicas.model.StatusConsulta;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID; 
+
 @Data
 @Builder
 public class ConsultaResponseDTO {
 
-    private Long id;
+    private UUID id;
+    
     private LocalDateTime dataHora;
     private LocalDateTime dataFim; 
     private StatusConsulta status;
@@ -20,7 +23,7 @@ public class ConsultaResponseDTO {
     @Data
     @Builder
     public static class MedicoConsultaDTO {
-        private Long id;
+        private UUID id; 
         private String nome;
         private String especialidade;
         private String crm;
@@ -29,7 +32,7 @@ public class ConsultaResponseDTO {
     @Data
     @Builder
     public static class PacienteConsultaDTO {
-        private Long id;
+        private UUID id; 
         private String nome;
         private String cpf;
     }

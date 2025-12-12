@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID; 
 import java.util.stream.Collectors;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -35,9 +36,12 @@ public class HistoricoServiceImpl implements IHistoricoService {
     @Transactional
     public HistoricoResponseDTO registrarHistorico(HistoricoRequestDTO dto) {
 
-        Consulta consulta = consultaRepository.findById(dto.getConsultaId())
+        // 🚨 CORREÇÃO ESSENCIAL AQUI: 
+        // Assumindo que você corrigiu HistoricoRequestDTO para que getConsultaId() retorne UUID
+        Consulta consulta = consultaRepository.findById(dto.getConsultaId()) 
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para registrar histórico."));
         
+        // 🚨 CORREÇÃO: findByConsultaId agora espera UUID
         if (historicoRepository.findByConsultaId(dto.getConsultaId()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta consulta já possui um histórico registrado.");
         }
@@ -60,7 +64,7 @@ public class HistoricoServiceImpl implements IHistoricoService {
 
     @Override
     @Transactional
-    public HistoricoResponseDTO atualizar(Long id, HistoricoRequestDTO dto) {
+    public HistoricoResponseDTO atualizar(UUID id, HistoricoRequestDTO dto) {
         Historico historico = historicoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Histórico não encontrado."));
 
@@ -72,14 +76,14 @@ public class HistoricoServiceImpl implements IHistoricoService {
     }
     
     @Override
-    public HistoricoResponseDTO buscarPorId(Long id) {
+    public HistoricoResponseDTO buscarPorId(UUID id) {
         Historico historico = historicoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Histórico não encontrado."));
         return toResponseDTO(historico);
     }
 
     @Override
-    public HistoricoResponseDTO buscarPorConsultaId(Long consultaId) {
+    public HistoricoResponseDTO buscarPorConsultaId(UUID consultaId) {
         Historico historico = historicoRepository.findByConsultaId(consultaId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Histórico não encontrado para a consulta ID: " + consultaId));
         return toResponseDTO(historico);
@@ -87,7 +91,7 @@ public class HistoricoServiceImpl implements IHistoricoService {
 
     @Override
     @Transactional
-    public void remover(Long id) {
+    public void remover(UUID id) {
         Historico historico = historicoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Histórico não encontrado para remoção."));
 
@@ -96,7 +100,7 @@ public class HistoricoServiceImpl implements IHistoricoService {
 
     @Override
     public byte[] gerarHistoricoConsultasPDF() {
-     
+      
         List<Historico> historicos = historicoRepository.findAll();
         
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -107,7 +111,7 @@ public class HistoricoServiceImpl implements IHistoricoService {
                 pdfContent.append("Nenhum histórico encontrado.\n");
             } else {
                 for (Historico h : historicos) {
-                    pdfContent.append("ID Histórico: ").append(h.getId()).append("\n");
+                    pdfContent.append("ID Histórico: ").append(h.getId()).append("\n"); 
                     pdfContent.append("Consulta ID: ").append(h.getConsulta().getId()).append("\n");
                     pdfContent.append("Data: ").append(h.getDataRegistro()).append("\n");
                     pdfContent.append("Observações (Resumo): ").append(h.getObservacoes().substring(0, Math.min(h.getObservacoes().length(), 50))).append("...\n");
@@ -125,7 +129,7 @@ public class HistoricoServiceImpl implements IHistoricoService {
 
     private HistoricoResponseDTO toResponseDTO(Historico historico) {
         return HistoricoResponseDTO.builder()
-            .id(historico.getId())
+            .id(historico.getId()) 
             .consultaId(historico.getConsulta().getId())
             .observacoes(historico.getObservacoes())
             .receita(historico.getReceita())

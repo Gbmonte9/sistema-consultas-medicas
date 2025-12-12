@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID; 
 import java.util.stream.Collectors;
 
 @Service
@@ -50,7 +51,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     }
     
     @Override
-    public UsuarioResponseDTO buscarPorId(Long id) {
+    public UsuarioResponseDTO buscarPorId(UUID id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
 
@@ -80,12 +81,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     @Transactional
-    public UsuarioResponseDTO atualizar(Long id, UsuarioCadastroDTO requestDTO) {
+    public UsuarioResponseDTO atualizar(UUID id, UsuarioCadastroDTO requestDTO) {
         
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
         
         Optional<Usuario> emailExistente = usuarioRepository.findByEmail(requestDTO.getEmail());
+        
         if (emailExistente.isPresent() && !emailExistente.get().getId().equals(id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado por outro usuário.");
         }
@@ -106,8 +108,8 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     @Transactional
-    public void remover(Long id) {
-      
+    public void remover(UUID id) {
+        
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
 
@@ -116,7 +118,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     private UsuarioResponseDTO toResponseDTO(Usuario usuario) {
         return UsuarioResponseDTO.builder()
-                .id(usuario.getId())
+                .id(usuario.getId()) 
                 .nome(usuario.getNome())
                 .email(usuario.getEmail())
                 .tipo(usuario.getTipo())

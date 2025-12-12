@@ -1,6 +1,7 @@
 package com.gabriel.consultasmedicas.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID; 
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -14,10 +15,10 @@ import lombok.AllArgsConstructor;
 public class ConsultaAgendamentoDTO {
 
     @NotNull(message = "O ID do paciente é obrigatório")
-    private Long pacienteId;
+    private UUID pacienteId;
 
     @NotNull(message = "O ID do médico é obrigatório")
-    private Long medicoId;
+    private UUID medicoId;
 
     @NotNull(message = "A data e hora são obrigatórias")
     @Future(message = "A data e hora do agendamento devem ser futuras")

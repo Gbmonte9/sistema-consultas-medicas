@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID; 
+
 @RestController
 @RequestMapping("/api/historico") 
 public class HistoricoController {
@@ -27,25 +29,25 @@ public class HistoricoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<HistoricoResponseDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<HistoricoResponseDTO> buscarPorId(@PathVariable UUID id) {
         HistoricoResponseDTO response = historicoService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/consulta/{consultaId}")
-    public ResponseEntity<HistoricoResponseDTO> buscarPorConsultaId(@PathVariable Long consultaId) {
+    public ResponseEntity<HistoricoResponseDTO> buscarPorConsultaId(@PathVariable UUID consultaId) {
         HistoricoResponseDTO response = historicoService.buscarPorConsultaId(consultaId);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HistoricoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody HistoricoRequestDTO requestDTO) {
+    public ResponseEntity<HistoricoResponseDTO> atualizar(@PathVariable UUID id, @Valid @RequestBody HistoricoRequestDTO requestDTO) {
         HistoricoResponseDTO response = historicoService.atualizar(id, requestDTO);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remover(@PathVariable Long id) {
+    public ResponseEntity<Void> remover(@PathVariable UUID id) {
         historicoService.remover(id);
         return ResponseEntity.noContent().build(); // Status 204
     }

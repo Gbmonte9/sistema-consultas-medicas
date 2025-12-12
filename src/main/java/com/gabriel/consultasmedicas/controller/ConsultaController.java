@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID; 
 
 
 @RestController
@@ -28,7 +29,7 @@ public class ConsultaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ConsultaResponseDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<ConsultaResponseDTO> buscarPorId(@PathVariable UUID id) {
         ConsultaResponseDTO response = consultaService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
@@ -40,20 +41,19 @@ public class ConsultaController {
     }
 
     @PutMapping("/{id}/cancelar")
-    public ResponseEntity<Void> cancelar(@PathVariable Long id) {
+    public ResponseEntity<Void> cancelar(@PathVariable UUID id) {
         consultaService.cancelar(id);
         return ResponseEntity.noContent().build(); 
     }
 
     @PutMapping("/{id}/finalizar")
-    public ResponseEntity<Void> finalizar(@PathVariable Long id) {
+    public ResponseEntity<Void> finalizar(@PathVariable UUID id) {
         consultaService.finalizar(id);
         return ResponseEntity.noContent().build(); 
     }
 
- 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remover(@PathVariable Long id) {
+    public ResponseEntity<Void> remover(@PathVariable UUID id) {
         consultaService.remover(id);
         return ResponseEntity.noContent().build(); 
     }

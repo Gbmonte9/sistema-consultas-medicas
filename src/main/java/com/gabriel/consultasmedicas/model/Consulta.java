@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -17,6 +16,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+import org.hibernate.annotations.GenericGenerator;
+
+
 @Entity
 @Table(name = "consultas")
 @NoArgsConstructor
@@ -25,8 +28,12 @@ import lombok.NoArgsConstructor;
 public class Consulta {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID") 
+    @GenericGenerator(
+        name = "UUID", 
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    private UUID id; 
     
     @ManyToOne
     @JoinColumn(name = "medico_id", nullable = false)

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID; 
 
 @RestController
 @RequestMapping("/api/usuarios") 
@@ -41,13 +42,13 @@ public class UsuarioController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable UUID id) {
         UsuarioResponseDTO response = usuarioService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remover(@PathVariable Long id) {
+    public ResponseEntity<Void> remover(@PathVariable UUID id) {
         usuarioService.remover(id);
         return ResponseEntity.noContent().build(); 
     }

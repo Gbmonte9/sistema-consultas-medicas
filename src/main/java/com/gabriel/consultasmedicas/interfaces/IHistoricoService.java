@@ -5,18 +5,19 @@ import java.util.List;
 import com.gabriel.consultasmedicas.dto.HistoricoRequestDTO;
 import com.gabriel.consultasmedicas.dto.HistoricoResponseDTO;
 
+import java.util.UUID; 
 
 public interface IHistoricoService {
     
     HistoricoResponseDTO registrarHistorico(HistoricoRequestDTO dto);
     
-    HistoricoResponseDTO buscarPorId(Long id);
+    HistoricoResponseDTO buscarPorId(UUID id);
 
-    HistoricoResponseDTO buscarPorConsultaId(Long consultaId); 
+    HistoricoResponseDTO buscarPorConsultaId(UUID consultaId); 
 
-    HistoricoResponseDTO atualizar(Long id, HistoricoRequestDTO dto);
+    HistoricoResponseDTO atualizar(UUID id, HistoricoRequestDTO dto);
     
-    void remover(Long id);
+    void remover(UUID id);
 
     byte[] gerarHistoricoConsultasPDF();
     

@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID; 
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +54,6 @@ public class ConsultaServiceImpl implements IConsultaService {
                     "A consulta deve ser agendada com no mínimo 30 minutos de antecedência.");
         }
 
-        // 1. Checa a disponibilidade usando a query JPQL que corrigimos
         List<Consulta> conflitos = consultaRepository.checarDisponibilidade(medico.getId(), dataHora, fimConsulta);
         if (!conflitos.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O médico já possui uma consulta marcada para este horário.");
@@ -72,7 +72,8 @@ public class ConsultaServiceImpl implements IConsultaService {
 
     @Override
     @Transactional
-    public void cancelar(Long id) {
+    public void cancelar(UUID id) {
+        // 🚨 CORREÇÃO: findById agora espera UUID
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         
@@ -86,7 +87,7 @@ public class ConsultaServiceImpl implements IConsultaService {
 
     @Override
     @Transactional
-    public void finalizar(Long id) {
+    public void finalizar(UUID id) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         consulta.setStatus(StatusConsulta.REALIZADA);    
@@ -95,7 +96,7 @@ public class ConsultaServiceImpl implements IConsultaService {
 
     @Override
     @Transactional
-    public ConsultaResponseDTO atualizarStatus(Long id, StatusConsulta novoStatus) {
+    public ConsultaResponseDTO atualizarStatus(UUID id, StatusConsulta novoStatus) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         consulta.setStatus(novoStatus);
@@ -103,7 +104,8 @@ public class ConsultaServiceImpl implements IConsultaService {
     }
 
     @Override
-    public ConsultaResponseDTO buscarPorId(Long id) {
+    public ConsultaResponseDTO buscarPorId(UUID id) {
+        // 🚨 CORREÇÃO: findById agora espera UUID
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         return toResponseDTO(consulta);
@@ -117,28 +119,30 @@ public class ConsultaServiceImpl implements IConsultaService {
     }
 
     @Override
-    public List<ConsultaResponseDTO> listarPorMedicoId(Long medicoId) {
+    public List<ConsultaResponseDTO> listarPorMedicoId(UUID medicoId) {
         return consultaRepository.findByMedicoId(medicoId).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ConsultaResponseDTO> listarPorPacienteId(Long pacienteId) {
+    public List<ConsultaResponseDTO> listarPorPacienteId(UUID pacienteId) {
+        // 🚨 CORREÇÃO: findByPacienteId agora espera UUID
         return consultaRepository.findByPacienteId(pacienteId).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ConsultaResponseDTO> listarPorMedicoEStatus(Long medicoId, StatusConsulta status) {
+    public List<ConsultaResponseDTO> listarPorMedicoEStatus(UUID medicoId, StatusConsulta status) {
+        // 🚨 CORREÇÃO: findByMedicoIdAndStatus agora espera UUID
         return consultaRepository.findByMedicoIdAndStatus(medicoId, status).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ConsultaResponseDTO> listarPorPacienteEStatus(Long pacienteId, StatusConsulta status) {
+    public List<ConsultaResponseDTO> listarPorPacienteEStatus(UUID pacienteId, StatusConsulta status) {
         return consultaRepository.findByPacienteIdAndStatus(pacienteId, status).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -146,8 +150,7 @@ public class ConsultaServiceImpl implements IConsultaService {
 
     @Override
     @Transactional
-    public void remover(Long id) {
-        // Padrão de busca e exclusão (mais consistente)
+    public void remover(UUID id) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para remoção."));
         

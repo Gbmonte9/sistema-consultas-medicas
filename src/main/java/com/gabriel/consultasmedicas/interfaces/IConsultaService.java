@@ -6,28 +6,30 @@ import com.gabriel.consultasmedicas.dto.ConsultaAgendamentoDTO;
 import com.gabriel.consultasmedicas.dto.ConsultaResponseDTO;
 import com.gabriel.consultasmedicas.model.StatusConsulta;
 
+import java.util.UUID; 
+
 
 public interface IConsultaService {
     
     ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto);
 
-    void cancelar(Long id);
+    void cancelar(UUID id);
 
-    void remover(Long id);
+    void remover(UUID id);
 
-    void finalizar(Long id);
+    void finalizar(UUID id);
 
-    ConsultaResponseDTO atualizarStatus(Long id, StatusConsulta novoStatus);
+    ConsultaResponseDTO atualizarStatus(UUID id, StatusConsulta novoStatus);
 
-    ConsultaResponseDTO buscarPorId(Long id);
+    ConsultaResponseDTO buscarPorId(UUID id);
 
     List<ConsultaResponseDTO> listarTodas();
 
-    List<ConsultaResponseDTO> listarPorMedicoId(Long medicoId);
+    List<ConsultaResponseDTO> listarPorMedicoId(UUID medicoId);
 
-    List<ConsultaResponseDTO> listarPorMedicoEStatus(Long medicoId, StatusConsulta status);
+    List<ConsultaResponseDTO> listarPorMedicoEStatus(UUID medicoId, StatusConsulta status);
 
-    List<ConsultaResponseDTO> listarPorPacienteId(Long pacienteId);
+    List<ConsultaResponseDTO> listarPorPacienteId(UUID pacienteId);
 
-    List<ConsultaResponseDTO> listarPorPacienteEStatus(Long pacienteId, StatusConsulta status);
+    List<ConsultaResponseDTO> listarPorPacienteEStatus(UUID pacienteId, StatusConsulta status);
 }
