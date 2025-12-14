@@ -40,11 +40,22 @@ public class ConsultaServiceImpl implements IConsultaService {
     @Transactional
     public ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto) {
  
-        Medico medico = medicoRepository.findById(dto.getMedicoId())
+        UUID pacienteUuid;
+        UUID medicoUuid;
+        try {
+            pacienteUuid = UUID.fromString(dto.getPacienteId());
+            medicoUuid = UUID.fromString(dto.getMedicoId());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Formato de ID de Médico ou Paciente inválido.");
+        }
+        
+        Medico medico = medicoRepository.findById(medicoUuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
+                
+        Paciente paciente = pacienteRepository.findById(pacienteUuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
-
+        
+        
         LocalDateTime dataHora = dto.getDataHora();
         
         LocalDateTime fimConsulta = dataHora.plusMinutes(30); 
@@ -73,7 +84,6 @@ public class ConsultaServiceImpl implements IConsultaService {
     @Override
     @Transactional
     public void cancelar(UUID id) {
-        // 🚨 CORREÇÃO: findById agora espera UUID
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         
@@ -105,7 +115,6 @@ public class ConsultaServiceImpl implements IConsultaService {
 
     @Override
     public ConsultaResponseDTO buscarPorId(UUID id) {
-        // 🚨 CORREÇÃO: findById agora espera UUID
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada."));
         return toResponseDTO(consulta);
@@ -127,7 +136,6 @@ public class ConsultaServiceImpl implements IConsultaService {
 
     @Override
     public List<ConsultaResponseDTO> listarPorPacienteId(UUID pacienteId) {
-        // 🚨 CORREÇÃO: findByPacienteId agora espera UUID
         return consultaRepository.findByPacienteId(pacienteId).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -135,7 +143,6 @@ public class ConsultaServiceImpl implements IConsultaService {
 
     @Override
     public List<ConsultaResponseDTO> listarPorMedicoEStatus(UUID medicoId, StatusConsulta status) {
-        // 🚨 CORREÇÃO: findByMedicoIdAndStatus agora espera UUID
         return consultaRepository.findByMedicoIdAndStatus(medicoId, status).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());

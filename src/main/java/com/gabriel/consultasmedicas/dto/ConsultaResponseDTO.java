@@ -15,7 +15,7 @@ public class ConsultaResponseDTO {
     private UUID id;
     
     private LocalDateTime dataHora;
-    private LocalDateTime dataFim; 
+    private LocalDateTime dataFim;    
     private StatusConsulta status;
     private MedicoConsultaDTO medico;
     private PacienteConsultaDTO paciente;
@@ -23,7 +23,7 @@ public class ConsultaResponseDTO {
     @Data
     @Builder
     public static class MedicoConsultaDTO {
-        private UUID id; 
+        private UUID id;    
         private String nome;
         private String especialidade;
         private String crm;
@@ -32,7 +32,7 @@ public class ConsultaResponseDTO {
     @Data
     @Builder
     public static class PacienteConsultaDTO {
-        private UUID id; 
+        private UUID id;    
         private String nome;
         private String cpf;
     }

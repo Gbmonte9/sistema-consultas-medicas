@@ -36,12 +36,9 @@ public class HistoricoServiceImpl implements IHistoricoService {
     @Transactional
     public HistoricoResponseDTO registrarHistorico(HistoricoRequestDTO dto) {
 
-        // 🚨 CORREÇÃO ESSENCIAL AQUI: 
-        // Assumindo que você corrigiu HistoricoRequestDTO para que getConsultaId() retorne UUID
         Consulta consulta = consultaRepository.findById(dto.getConsultaId()) 
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para registrar histórico."));
         
-        // 🚨 CORREÇÃO: findByConsultaId agora espera UUID
         if (historicoRepository.findByConsultaId(dto.getConsultaId()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta consulta já possui um histórico registrado.");
         }
