@@ -1,31 +1,59 @@
 package com.gabriel.consultasmedicas.controller;
 
-import com.gabriel.consultasmedicas.dto.ConsultaAgendamentoDTO; 
-import com.gabriel.consultasmedicas.dto.ConsultaResponseDTO; 
+import com.gabriel.consultasmedicas.dto.ConsultaAgendamentoDTO;
+import com.gabriel.consultasmedicas.dto.ConsultaHistoricoIntegradoDTO;
+import com.gabriel.consultasmedicas.dto.ConsultaResponseDTO;
+import com.gabriel.consultasmedicas.dto.HistoricoRequestDTO;
 import com.gabriel.consultasmedicas.interfaces.IConsultaService;
-import jakarta.validation.Valid; 
+import com.gabriel.consultasmedicas.interfaces.IHistoricoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID; 
+import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/api/consultas") 
+@RequestMapping("/api/consultas")
 public class ConsultaController {
 
     private final IConsultaService consultaService;
+    private final IHistoricoService historicoService; 
 
-    public ConsultaController(IConsultaService consultaService) {
+    public ConsultaController(IConsultaService consultaService, IHistoricoService historicoService) {
         this.consultaService = consultaService;
+        this.historicoService = historicoService;
     }
 
     @PostMapping
     public ResponseEntity<ConsultaResponseDTO> agendar(@Valid @RequestBody ConsultaAgendamentoDTO requestDTO) {
         ConsultaResponseDTO response = consultaService.agendar(requestDTO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED); 
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/agendar-e-finalizar")
+    public ResponseEntity<ConsultaResponseDTO> agendarEFinalizar(
+            @RequestBody @Valid ConsultaHistoricoIntegradoDTO dto) {
+
+        ConsultaAgendamentoDTO consultaAgendamentoDTO = new ConsultaAgendamentoDTO(
+                dto.pacienteId().toString(), 
+                dto.medicoId().toString(),   
+                dto.dataHora()
+        );
+
+        ConsultaResponseDTO consultaFinalizadaDTO = consultaService.agendarEFinalizar(consultaAgendamentoDTO);
+
+        HistoricoRequestDTO historicoCriacaoDTO = new HistoricoRequestDTO(
+                consultaFinalizadaDTO.getId(), 
+                dto.observacoes(),
+                dto.receita()
+        );
+
+        historicoService.registrarHistorico(historicoCriacaoDTO);
+
+        return new ResponseEntity<>(consultaFinalizadaDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -43,18 +71,18 @@ public class ConsultaController {
     @PutMapping("/{id}/cancelar")
     public ResponseEntity<Void> cancelar(@PathVariable UUID id) {
         consultaService.cancelar(id);
-        return ResponseEntity.noContent().build(); 
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/finalizar")
     public ResponseEntity<Void> finalizar(@PathVariable UUID id) {
         consultaService.finalizar(id);
-        return ResponseEntity.noContent().build(); 
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> remover(@PathVariable UUID id) {
         consultaService.remover(id);
-        return ResponseEntity.noContent().build(); 
+        return ResponseEntity.noContent().build();
     }
 }

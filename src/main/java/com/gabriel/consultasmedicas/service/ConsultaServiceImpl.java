@@ -18,7 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID; 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +39,7 @@ public class ConsultaServiceImpl implements IConsultaService {
     @Override
     @Transactional
     public ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto) {
- 
+
         UUID pacienteUuid;
         UUID medicoUuid;
         try {
@@ -58,7 +58,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         
         LocalDateTime dataHora = dto.getDataHora();
         
-        LocalDateTime fimConsulta = dataHora.plusMinutes(30); 
+        LocalDateTime fimConsulta = dataHora.plusMinutes(30);
 
         if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -74,13 +74,60 @@ public class ConsultaServiceImpl implements IConsultaService {
         novaConsulta.setMedico(medico);
         novaConsulta.setPaciente(paciente);
         novaConsulta.setDataHora(dataHora);
-        novaConsulta.setDataFim(fimConsulta); 
-        novaConsulta.setStatus(StatusConsulta.AGENDADA);
+        novaConsulta.setDataFim(fimConsulta);
+        novaConsulta.setStatus(StatusConsulta.AGENDADA); // <--- Status Padrão
 
         Consulta consultaSalva = consultaRepository.save(novaConsulta);
         return toResponseDTO(consultaSalva);
     }
 
+    @Override
+    @Transactional
+    public ConsultaResponseDTO agendarEFinalizar(ConsultaAgendamentoDTO dto) {
+
+        UUID pacienteUuid;
+        UUID medicoUuid;
+        try {
+            pacienteUuid = UUID.fromString(dto.getPacienteId());
+            medicoUuid = UUID.fromString(dto.getMedicoId());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Formato de ID de Médico ou Paciente inválido.");
+        }
+        
+        Medico medico = medicoRepository.findById(medicoUuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
+                
+        Paciente paciente = pacienteRepository.findById(pacienteUuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
+        
+        
+        LocalDateTime dataHora = dto.getDataHora();
+        
+        LocalDateTime fimConsulta = dataHora.plusMinutes(30);
+
+        if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Para agendar e finalizar, a consulta deve ser registrada para um horário válido.");
+        }
+
+        List<Consulta> conflitos = consultaRepository.checarDisponibilidade(medico.getId(), dataHora, fimConsulta);
+        if (!conflitos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "O médico já possui uma consulta marcada para este horário.");
+        }
+
+        Consulta novaConsulta = new Consulta();
+        novaConsulta.setMedico(medico);
+        novaConsulta.setPaciente(paciente);
+        novaConsulta.setDataHora(dataHora);
+        novaConsulta.setDataFim(fimConsulta);
+        
+        // ***** A CHAVE: Status REALIZADA/FINALIZADA *****
+        novaConsulta.setStatus(StatusConsulta.REALIZADA); 
+
+        Consulta consultaSalva = consultaRepository.save(novaConsulta);
+        return toResponseDTO(consultaSalva);
+    }
+    
     @Override
     @Transactional
     public void cancelar(UUID id) {
@@ -181,7 +228,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         return ConsultaResponseDTO.builder()
                 .id(consulta.getId())
                 .dataHora(consulta.getDataHora())
-                .dataFim(consulta.getDataFim()) 
+                .dataFim(consulta.getDataFim())    
                 .status(consulta.getStatus())
                 .medico(medicoDTO)
                 .paciente(pacienteDTO)

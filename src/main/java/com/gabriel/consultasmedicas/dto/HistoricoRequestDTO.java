@@ -1,18 +1,18 @@
 package com.gabriel.consultasmedicas.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor; 
 import lombok.Data;
 import java.util.UUID; 
 
 @Data
+@AllArgsConstructor 
 public class HistoricoRequestDTO {
 
     @NotNull(message = "O ID da consulta é obrigatório")
     private UUID consultaId;
 
-    @NotBlank(message = "As observações são obrigatórias")
-    private String observacoes;
+    private String observacoes; 
 
     private String receita;
 }

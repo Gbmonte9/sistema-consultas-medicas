@@ -6,13 +6,15 @@ import com.gabriel.consultasmedicas.dto.ConsultaAgendamentoDTO;
 import com.gabriel.consultasmedicas.dto.ConsultaResponseDTO;
 import com.gabriel.consultasmedicas.model.StatusConsulta;
 
-import java.util.UUID; 
+import java.util.UUID;
 
 
 public interface IConsultaService {
     
     ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto);
 
+    ConsultaResponseDTO agendarEFinalizar(ConsultaAgendamentoDTO dto); // Adicione esta linha!
+    
     void cancelar(UUID id);
 
     void remover(UUID id);
