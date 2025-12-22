@@ -75,24 +75,34 @@ public class PacienteServiceImpl implements IPacienteService {
     @Override
     @Transactional
     public PacienteResponseDTO atualizar(UUID id, PacienteCadastroDTO dto) {
+
         Paciente paciente = pacienteRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
         
-        String newHashedCpf = cpfHasher.hash(dto.getCpf());
-
-        Optional<Paciente> cpfExistente = pacienteRepository.findByCpf(newHashedCpf);
-        
-        if (cpfExistente.isPresent() && !cpfExistente.get().getId().equals(id)) {
-             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado por outro paciente.");
+        if (dto.getCpf() != null && !dto.getCpf().isBlank()) {
+            String newHashedCpf = cpfHasher.hash(dto.getCpf());
+            
+            if (!newHashedCpf.equals(paciente.getCpf())) {
+                Optional<Paciente> cpfExistente = pacienteRepository.findByCpf(newHashedCpf);
+                if (cpfExistente.isPresent()) {
+                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Novo CPF já cadastrado por outro paciente.");
+                }
+                paciente.setCpf(newHashedCpf);
+            }
         }
 
-        paciente.setCpf(newHashedCpf);
         paciente.setTelefone(dto.getTelefone());
         
         Usuario usuario = paciente.getUsuario();
         
         usuarioService.atualizar(usuario.getId(), 
-                                 new UsuarioCadastroDTO(dto.getNome(), dto.getEmail(), dto.getSenha(), TipoUsuario.PACIENTE));
+            new UsuarioCadastroDTO(
+                dto.getNome(), 
+                dto.getEmail(), 
+                dto.getSenha(), 
+                TipoUsuario.PACIENTE
+            )
+        );
         
         return toResponseDTO(pacienteRepository.save(paciente));
     }

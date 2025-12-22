@@ -63,22 +63,34 @@ public class MedicoServiceImpl implements IMedicoService {
     @Override
     @Transactional
     public MedicoResponseDTO atualizar(UUID id, MedicoCadastroDTO dto) {
+   
         Medico medico = medicoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
 
-        Optional<Medico> crmExistente = medicoRepository.findByCrm(dto.getCrm());
-        
-        if (crmExistente.isPresent() && !crmExistente.get().getId().equals(id)) {
-             throw new ResponseStatusException(HttpStatus.CONFLICT, "CRM já cadastrado por outro médico.");
+        if (dto.getCrm() != null && !dto.getCrm().isBlank()) {
+        	
+            if (!dto.getCrm().equals(medico.getCrm())) {
+                Optional<Medico> crmExistente = medicoRepository.findByCrm(dto.getCrm());
+                if (crmExistente.isPresent()) {
+                     throw new ResponseStatusException(HttpStatus.CONFLICT, "CRM já cadastrado por outro médico.");
+                }
+                medico.setCrm(dto.getCrm());
+            }
         }
 
-        medico.setCrm(dto.getCrm());
-        medico.setEspecialidade(dto.getEspecialidade());
+        if (dto.getEspecialidade() != null) {
+            medico.setEspecialidade(dto.getEspecialidade());
+        }
         
         Usuario usuario = medico.getUsuario();
         
         usuarioService.atualizar(usuario.getId(), 
-                                 new UsuarioCadastroDTO(dto.getNome(), dto.getEmail(), dto.getSenha(), TipoUsuario.MEDICO));
+                                 new UsuarioCadastroDTO(
+                                     dto.getNome(), 
+                                     dto.getEmail(), 
+                                     dto.getSenha(),
+                                     TipoUsuario.MEDICO
+                                 ));
         
         return toResponseDTO(medicoRepository.save(medico));
     }

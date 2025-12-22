@@ -86,19 +86,26 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
         
-        Optional<Usuario> emailExistente = usuarioRepository.findByEmail(requestDTO.getEmail());
-        
-        if (emailExistente.isPresent() && !emailExistente.get().getId().equals(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado por outro usuário.");
+        if (requestDTO.getEmail() != null && !requestDTO.getEmail().equalsIgnoreCase(usuarioExistente.getEmail())) {
+            Optional<Usuario> emailExistente = usuarioRepository.findByEmail(requestDTO.getEmail());
+            if (emailExistente.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado por outro usuário.");
+            }
+            usuarioExistente.setEmail(requestDTO.getEmail());
         }
         
         usuarioExistente.setNome(requestDTO.getNome());
-        usuarioExistente.setEmail(requestDTO.getEmail());
-        usuarioExistente.setTipo(requestDTO.getTipo());
         
-        if (requestDTO.getSenha() != null && !requestDTO.getSenha().isEmpty()) {
+        if (requestDTO.getTipo() != null) {
+            usuarioExistente.setTipo(requestDTO.getTipo());
+        }
+        
+        if (requestDTO.getSenha() != null && !requestDTO.getSenha().isBlank()) {
             String novaSenhaCriptografada = passwordEncoder.encode(requestDTO.getSenha());
             usuarioExistente.setSenha(novaSenhaCriptografada);
+            System.out.println("ℹ️ Senha do usuário " + usuarioExistente.getEmail() + " foi atualizada.");
+        } else {
+            System.out.println("ℹ️ Senha não alterada para o usuário " + usuarioExistente.getEmail());
         }
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuarioExistente);
