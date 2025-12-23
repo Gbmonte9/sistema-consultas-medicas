@@ -1,7 +1,7 @@
 package com.gabriel.consultasmedicas.config;
 
 import com.gabriel.consultasmedicas.model.Usuario;
-import com.gabriel.consultasmedicas.model.TipoUsuario; // Verifique se este é o nome do seu Enum de tipos
+import com.gabriel.consultasmedicas.model.TipoUsuario; 
 import com.gabriel.consultasmedicas.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

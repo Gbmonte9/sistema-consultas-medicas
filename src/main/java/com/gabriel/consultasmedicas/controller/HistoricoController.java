@@ -10,10 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID; 
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/historico") 
+@RequestMapping("/api/historico")
 public class HistoricoController {
 
     private final IHistoricoService historicoService;
@@ -25,7 +25,7 @@ public class HistoricoController {
     @PostMapping
     public ResponseEntity<HistoricoResponseDTO> registrar(@Valid @RequestBody HistoricoRequestDTO requestDTO) {
         HistoricoResponseDTO response = historicoService.registrarHistorico(requestDTO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED); // Status 201
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -49,16 +49,13 @@ public class HistoricoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> remover(@PathVariable UUID id) {
         historicoService.remover(id);
-        return ResponseEntity.noContent().build(); // Status 204
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/pdf/consultas") 
+    @GetMapping("/pdf/consultas")
     public ResponseEntity<byte[]> gerarHistoricoConsultasPDF() {
-
         byte[] pdfBytes = historicoService.gerarHistoricoConsultasPDF();
-
         return ResponseEntity.ok()
-                
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"historico_consultas.pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
