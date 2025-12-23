@@ -32,21 +32,19 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDTO criar(UsuarioCadastroDTO requestDTO) {
-
-        if (usuarioRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
+        if (usuarioRepository.findByEmail(requestDTO.getEmail().trim().toLowerCase()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email já cadastrado.");
         }
 
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(requestDTO.getNome());
-        novoUsuario.setEmail(requestDTO.getEmail());
+        novoUsuario.setEmail(requestDTO.getEmail().trim().toLowerCase());
         novoUsuario.setTipo(requestDTO.getTipo());
 
         String senhaCriptografada = passwordEncoder.encode(requestDTO.getSenha());
         novoUsuario.setSenha(senhaCriptografada);
 
         Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
-
         return toResponseDTO(usuarioSalvo);
     }
     
@@ -54,13 +52,12 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public UsuarioResponseDTO buscarPorId(UUID id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
-
         return toResponseDTO(usuario);
     }
     
     @Override
     public Optional<Usuario> buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
+        return usuarioRepository.findByEmail(email.trim().toLowerCase());
     }
 
     @Override
@@ -73,7 +70,6 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     public List<UsuarioResponseDTO> buscarPorTipo(TipoUsuario tipo) {
         List<Usuario> usuarios = usuarioRepository.findByTipo(tipo);
-
         return usuarios.stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -82,19 +78,22 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDTO atualizar(UUID id, UsuarioCadastroDTO requestDTO) {
-        
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
         
-        if (requestDTO.getEmail() != null && !requestDTO.getEmail().equalsIgnoreCase(usuarioExistente.getEmail())) {
-            Optional<Usuario> emailExistente = usuarioRepository.findByEmail(requestDTO.getEmail());
-            if (emailExistente.isPresent()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado por outro usuário.");
+        if (requestDTO.getEmail() != null && !requestDTO.getEmail().isBlank()) {
+            String novoEmail = requestDTO.getEmail().trim().toLowerCase();
+            if (!novoEmail.equalsIgnoreCase(usuarioExistente.getEmail())) {
+                if (usuarioRepository.findByEmail(novoEmail).isPresent()) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado por outro usuário.");
+                }
+                usuarioExistente.setEmail(novoEmail);
             }
-            usuarioExistente.setEmail(requestDTO.getEmail());
         }
         
-        usuarioExistente.setNome(requestDTO.getNome());
+        if (requestDTO.getNome() != null && !requestDTO.getNome().isBlank()) {
+            usuarioExistente.setNome(requestDTO.getNome());
+        }
         
         if (requestDTO.getTipo() != null) {
             usuarioExistente.setTipo(requestDTO.getTipo());
@@ -103,23 +102,17 @@ public class UsuarioServiceImpl implements IUsuarioService {
         if (requestDTO.getSenha() != null && !requestDTO.getSenha().isBlank()) {
             String novaSenhaCriptografada = passwordEncoder.encode(requestDTO.getSenha());
             usuarioExistente.setSenha(novaSenhaCriptografada);
-            System.out.println("ℹ️ Senha do usuário " + usuarioExistente.getEmail() + " foi atualizada.");
-        } else {
-            System.out.println("ℹ️ Senha não alterada para o usuário " + usuarioExistente.getEmail());
         }
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuarioExistente);
-
         return toResponseDTO(usuarioAtualizado);
     }
 
     @Override
     @Transactional
     public void remover(UUID id) {
-        
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
-
         usuarioRepository.delete(usuario);
     }
 

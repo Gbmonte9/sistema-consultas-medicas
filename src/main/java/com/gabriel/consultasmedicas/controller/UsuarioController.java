@@ -27,12 +27,26 @@ public class UsuarioController {
         UsuarioResponseDTO response = usuarioService.criar(requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED); 
     }
+
+    /**
+     * NOVO MÉTODO: Atualiza os dados do usuário (Perfil)
+     * Esse método é o que o botão "Salvar Alterações" do React vai chamar.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable UUID id, @RequestBody UsuarioCadastroDTO requestDTO) {
+        UsuarioResponseDTO response = usuarioService.atualizar(id, requestDTO);
+        return ResponseEntity.ok(response);
+    }
     
     @GetMapping("/tipo/{tipo}") 
     public ResponseEntity<List<UsuarioResponseDTO>> buscarPorTipo(@PathVariable String tipo) {
-        TipoUsuario tipoUsuario = TipoUsuario.valueOf(tipo.toUpperCase());
-        List<UsuarioResponseDTO> usuarios = usuarioService.buscarPorTipo(tipoUsuario);
-        return ResponseEntity.ok(usuarios);
+        try {
+            TipoUsuario tipoUsuario = TipoUsuario.valueOf(tipo.toUpperCase());
+            List<UsuarioResponseDTO> usuarios = usuarioService.buscarPorTipo(tipoUsuario);
+            return ResponseEntity.ok(usuarios);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
     
     @GetMapping
@@ -52,5 +66,4 @@ public class UsuarioController {
         usuarioService.remover(id);
         return ResponseEntity.noContent().build(); 
     }
-    
 }

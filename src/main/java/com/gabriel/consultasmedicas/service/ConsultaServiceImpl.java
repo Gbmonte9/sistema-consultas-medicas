@@ -39,7 +39,6 @@ public class ConsultaServiceImpl implements IConsultaService {
     @Override
     @Transactional
     public ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto) {
-
         UUID pacienteUuid;
         UUID medicoUuid;
         try {
@@ -55,9 +54,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         Paciente paciente = pacienteRepository.findById(pacienteUuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
         
-        
         LocalDateTime dataHora = dto.getDataHora();
-        
         LocalDateTime fimConsulta = dataHora.plusMinutes(30);
 
         if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
@@ -75,7 +72,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         novaConsulta.setPaciente(paciente);
         novaConsulta.setDataHora(dataHora);
         novaConsulta.setDataFim(fimConsulta);
-        novaConsulta.setStatus(StatusConsulta.AGENDADA); // <--- Status Padrão
+        novaConsulta.setStatus(StatusConsulta.AGENDADA);
 
         Consulta consultaSalva = consultaRepository.save(novaConsulta);
         return toResponseDTO(consultaSalva);
@@ -84,7 +81,6 @@ public class ConsultaServiceImpl implements IConsultaService {
     @Override
     @Transactional
     public ConsultaResponseDTO agendarEFinalizar(ConsultaAgendamentoDTO dto) {
-
         UUID pacienteUuid;
         UUID medicoUuid;
         try {
@@ -100,15 +96,8 @@ public class ConsultaServiceImpl implements IConsultaService {
         Paciente paciente = pacienteRepository.findById(pacienteUuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
         
-        
         LocalDateTime dataHora = dto.getDataHora();
-        
         LocalDateTime fimConsulta = dataHora.plusMinutes(30);
-
-        if (dataHora.isBefore(LocalDateTime.now().plusMinutes(30))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Para agendar e finalizar, a consulta deve ser registrada para um horário válido.");
-        }
 
         List<Consulta> conflitos = consultaRepository.checarDisponibilidade(medico.getId(), dataHora, fimConsulta);
         if (!conflitos.isEmpty()) {
@@ -120,8 +109,6 @@ public class ConsultaServiceImpl implements IConsultaService {
         novaConsulta.setPaciente(paciente);
         novaConsulta.setDataHora(dataHora);
         novaConsulta.setDataFim(fimConsulta);
-        
-        // ***** A CHAVE: Status REALIZADA/FINALIZADA *****
         novaConsulta.setStatus(StatusConsulta.REALIZADA); 
 
         Consulta consultaSalva = consultaRepository.save(novaConsulta);
@@ -181,9 +168,18 @@ public class ConsultaServiceImpl implements IConsultaService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * MÉTODO CORRIGIDO PARA O DASHBOARD:
+     * Agora ele traduz o ID do Usuário (vindo do React) para o ID do Paciente.
+     */
     @Override
-    public List<ConsultaResponseDTO> listarPorPacienteId(UUID pacienteId) {
-        return consultaRepository.findByPacienteId(pacienteId).stream()
+    public List<ConsultaResponseDTO> listarPorPacienteId(UUID id) {
+        // Tenta achar o paciente pelo ID dele. Se não achar, tenta pelo ID do Usuario vinculado.
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseGet(() -> pacienteRepository.findByUsuarioId(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado para o ID: " + id)));
+
+        return consultaRepository.findByPacienteId(paciente.getId()).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -207,7 +203,6 @@ public class ConsultaServiceImpl implements IConsultaService {
     public void remover(UUID id) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada para remoção."));
-        
         consultaRepository.delete(consulta);
     }
 

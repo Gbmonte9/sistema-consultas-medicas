@@ -12,4 +12,5 @@ public interface PacienteRepository extends JpaRepository<Paciente, UUID> {
     Optional<Paciente> findByCpf(String cpf);
 
     Optional<Paciente> findByUsuarioId(UUID usuarioId);
+    
 }

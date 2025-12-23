@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-
 @RestController
 @RequestMapping("/api/consultas")
 public class ConsultaController {
@@ -25,6 +24,16 @@ public class ConsultaController {
     public ConsultaController(IConsultaService consultaService, IHistoricoService historicoService) {
         this.consultaService = consultaService;
         this.historicoService = historicoService;
+    }
+
+    /**
+     * Lista as consultas de um paciente. 
+     * Se o ID for de Usuário ou de Paciente, o Service deve tratar.
+     */
+    @GetMapping("/paciente/{id}")
+    public ResponseEntity<List<ConsultaResponseDTO>> listarPorPaciente(@PathVariable UUID id) {
+        List<ConsultaResponseDTO> consultas = consultaService.listarPorPacienteId(id);
+        return ResponseEntity.ok(consultas);
     }
 
     @PostMapping
