@@ -52,7 +52,8 @@ public class ConsultaServiceImpl implements IConsultaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
                 
         Paciente paciente = pacienteRepository.findById(pacienteUuid)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
+                .orElseGet(() -> pacienteRepository.findByUsuarioId(pacienteUuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado.")));
         
         LocalDateTime dataHora = dto.getDataHora();
         LocalDateTime fimConsulta = dataHora.plusMinutes(30);
@@ -73,6 +74,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         novaConsulta.setDataHora(dataHora);
         novaConsulta.setDataFim(fimConsulta);
         novaConsulta.setStatus(StatusConsulta.AGENDADA);
+        novaConsulta.setMotivo(dto.getMotivo()); // <-- SALVANDO O MOTIVO
 
         Consulta consultaSalva = consultaRepository.save(novaConsulta);
         return toResponseDTO(consultaSalva);
@@ -94,7 +96,8 @@ public class ConsultaServiceImpl implements IConsultaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
                 
         Paciente paciente = pacienteRepository.findById(pacienteUuid)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
+                .orElseGet(() -> pacienteRepository.findByUsuarioId(pacienteUuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado.")));
         
         LocalDateTime dataHora = dto.getDataHora();
         LocalDateTime fimConsulta = dataHora.plusMinutes(30);
@@ -110,6 +113,7 @@ public class ConsultaServiceImpl implements IConsultaService {
         novaConsulta.setDataHora(dataHora);
         novaConsulta.setDataFim(fimConsulta);
         novaConsulta.setStatus(StatusConsulta.REALIZADA); 
+        novaConsulta.setMotivo(dto.getMotivo()); // <-- SALVANDO O MOTIVO
 
         Consulta consultaSalva = consultaRepository.save(novaConsulta);
         return toResponseDTO(consultaSalva);
@@ -168,13 +172,8 @@ public class ConsultaServiceImpl implements IConsultaService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * MÉTODO CORRIGIDO PARA O DASHBOARD:
-     * Agora ele traduz o ID do Usuário (vindo do React) para o ID do Paciente.
-     */
     @Override
     public List<ConsultaResponseDTO> listarPorPacienteId(UUID id) {
-        // Tenta achar o paciente pelo ID dele. Se não achar, tenta pelo ID do Usuario vinculado.
         Paciente paciente = pacienteRepository.findById(id)
                 .orElseGet(() -> pacienteRepository.findByUsuarioId(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado para o ID: " + id)));
@@ -225,6 +224,7 @@ public class ConsultaServiceImpl implements IConsultaService {
                 .dataHora(consulta.getDataHora())
                 .dataFim(consulta.getDataFim())    
                 .status(consulta.getStatus())
+                .motivo(consulta.getMotivo())
                 .medico(medicoDTO)
                 .paciente(pacienteDTO)
                 .build();

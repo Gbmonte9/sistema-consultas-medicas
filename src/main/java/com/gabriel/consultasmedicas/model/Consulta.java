@@ -1,6 +1,7 @@
 package com.gabriel.consultasmedicas.model;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,10 +16,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 import org.hibernate.annotations.GenericGenerator;
-
 
 @Entity
 @Table(name = "consultas")
@@ -52,5 +50,7 @@ public class Consulta {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private StatusConsulta status; 
-    
+
+    @Column(columnDefinition = "TEXT")
+    private String motivo;
 }

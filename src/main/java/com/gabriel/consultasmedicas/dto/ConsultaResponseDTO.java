@@ -1,11 +1,9 @@
 package com.gabriel.consultasmedicas.dto;
 
 import java.time.LocalDateTime;
-
 import com.gabriel.consultasmedicas.model.StatusConsulta;
 import lombok.Builder;
 import lombok.Data;
-
 import java.util.UUID; 
 
 @Data
@@ -13,10 +11,10 @@ import java.util.UUID;
 public class ConsultaResponseDTO {
 
     private UUID id;
-    
     private LocalDateTime dataHora;
     private LocalDateTime dataFim;    
     private StatusConsulta status;
+    private String motivo; // Novo campo para retornar ao React
     private MedicoConsultaDTO medico;
     private PacienteConsultaDTO paciente;
 
@@ -36,5 +34,4 @@ public class ConsultaResponseDTO {
         private String nome;
         private String cpf;
     }
-    
 }

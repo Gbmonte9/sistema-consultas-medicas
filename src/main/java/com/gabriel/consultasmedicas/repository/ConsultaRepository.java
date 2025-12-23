@@ -7,10 +7,12 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.gabriel.consultasmedicas.model.Consulta;
 import com.gabriel.consultasmedicas.model.StatusConsulta;
 
+@Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, UUID> {
 
     List<Consulta> findByMedicoIdAndStatus(UUID medicoId, StatusConsulta status);
@@ -23,7 +25,10 @@ public interface ConsultaRepository extends JpaRepository<Consulta, UUID> {
     
     List<Consulta> findByPacienteId(UUID pacienteId);
     
-   
+    /**
+     * Verifica se o médico possui consultas AGENDADAS que conflitam com o horário solicitado.
+     * Considera a intersecção entre o início e o fim da consulta.
+     */
     @Query("SELECT c FROM Consulta c " +
            "WHERE c.medico.id = :medicoId " +
            "AND c.status = 'AGENDADA' " +

@@ -28,7 +28,7 @@ public class ConsultaController {
 
     /**
      * Lista as consultas de um paciente. 
-     * Se o ID for de Usuário ou de Paciente, o Service deve tratar.
+     * O Service já está tratando se o ID é de Usuário ou de Paciente.
      */
     @GetMapping("/paciente/{id}")
     public ResponseEntity<List<ConsultaResponseDTO>> listarPorPaciente(@PathVariable UUID id) {
@@ -36,21 +36,29 @@ public class ConsultaController {
         return ResponseEntity.ok(consultas);
     }
 
+    /**
+     * Agendamento padrão de consulta.
+     */
     @PostMapping
     public ResponseEntity<ConsultaResponseDTO> agendar(@Valid @RequestBody ConsultaAgendamentoDTO requestDTO) {
         ConsultaResponseDTO response = consultaService.agendar(requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * Agendar e Finalizar (para registros retroativos ou rápidos).
+     * Atualizado para incluir o campo 'motivo' na conversão do DTO.
+     */
     @PostMapping("/agendar-e-finalizar")
     public ResponseEntity<ConsultaResponseDTO> agendarEFinalizar(
             @RequestBody @Valid ConsultaHistoricoIntegradoDTO dto) {
 
-        ConsultaAgendamentoDTO consultaAgendamentoDTO = new ConsultaAgendamentoDTO(
-                dto.pacienteId().toString(), 
-                dto.medicoId().toString(),   
-                dto.dataHora()
-        );
+        // Criamos o DTO de agendamento incluindo o campo motivo (vazio ou vindo do DTO integrado)
+        ConsultaAgendamentoDTO consultaAgendamentoDTO = new ConsultaAgendamentoDTO();
+        consultaAgendamentoDTO.setPacienteId(dto.pacienteId().toString());
+        consultaAgendamentoDTO.setMedicoId(dto.medicoId().toString());
+        consultaAgendamentoDTO.setDataHora(dto.dataHora());
+        consultaAgendamentoDTO.setMotivo("Consulta agendada e finalizada pelo sistema"); // Ou dto.motivo() se existir no HistoricoIntegrado
 
         ConsultaResponseDTO consultaFinalizadaDTO = consultaService.agendarEFinalizar(consultaAgendamentoDTO);
 

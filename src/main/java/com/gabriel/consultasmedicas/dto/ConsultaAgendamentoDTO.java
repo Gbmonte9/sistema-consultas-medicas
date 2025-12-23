@@ -1,8 +1,7 @@
 package com.gabriel.consultasmedicas.dto;
 
 import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat; // 🚨 IMPORTANTE
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,4 +25,6 @@ public class ConsultaAgendamentoDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") 
     private LocalDateTime dataHora;
 
+    // Novo campo para capturar o motivo enviado pelo React
+    private String motivo; 
 }
