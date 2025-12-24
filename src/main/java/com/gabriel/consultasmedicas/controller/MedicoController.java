@@ -9,10 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID; // 🚨 NOVO: Importação do UUID
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/medicos") 
+@RequestMapping("/api/medicos")
 public class MedicoController {
 
     private final IMedicoService medicoService;
@@ -23,11 +23,9 @@ public class MedicoController {
 
     @PostMapping
     public ResponseEntity<MedicoResponseDTO> criar(@Valid @RequestBody MedicoCadastroDTO requestDTO) {
-        // Assume que MedicoCadastroDTO lida corretamente com as referências (ex: usuarioId) como UUID, se necessário.
         MedicoResponseDTO response = medicoService.criar(requestDTO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED); 
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<MedicoResponseDTO> buscarPorId(@PathVariable UUID id) {
@@ -38,7 +36,7 @@ public class MedicoController {
     @GetMapping
     public ResponseEntity<List<MedicoResponseDTO>> listarTodos() {
         List<MedicoResponseDTO> medicos = medicoService.listarTodos();
-        return ResponseEntity.ok(medicos); 
+        return ResponseEntity.ok(medicos);
     }
 
     @GetMapping("/especialidade")
@@ -49,6 +47,7 @@ public class MedicoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MedicoResponseDTO> atualizar(@PathVariable UUID id, @Valid @RequestBody MedicoCadastroDTO requestDTO) {
+        // Garante que o ID do path seja usado na atualização
         MedicoResponseDTO response = medicoService.atualizar(id, requestDTO);
         return ResponseEntity.ok(response);
     }

@@ -19,7 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
-@EnableWebSecurity 
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -28,27 +28,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            
             .csrf(csrf -> csrf.disable())
-            
-            
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
             .authorizeHttpRequests(auth -> auth
-            	.requestMatchers("/api/auth/**").permitAll() 
-            	.requestMatchers("/error").permitAll() 
-            	.requestMatchers("/api/historico/**").authenticated() 
-
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                
+                .requestMatchers(HttpMethod.PUT, "/api/medicos/**").authenticated()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
+                
+                .requestMatchers("/api/historico/**").authenticated()
                 .requestMatchers("/api/medicos/**").authenticated()
                 .requestMatchers("/api/pacientes/**").authenticated()
                 .requestMatchers("/api/consultas/**").authenticated()
                 .requestMatchers("/api/dashboard/**").authenticated()
                 
-                .anyRequest().authenticated() 
+                .anyRequest().authenticated()
             )
-            
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

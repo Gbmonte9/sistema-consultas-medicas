@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID; 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,7 +34,6 @@ public class MedicoServiceImpl implements IMedicoService {
     @Override
     @Transactional
     public MedicoResponseDTO criar(MedicoCadastroDTO dto) {
-        
         if (medicoRepository.findByCrm(dto.getCrm()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CRM já cadastrado.");
         }
@@ -48,7 +47,7 @@ public class MedicoServiceImpl implements IMedicoService {
         usuarioService.criar(usuarioDto);
         
         Usuario usuario = usuarioService.buscarPorEmail(dto.getEmail())
-                                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Usuário base não encontrado após criação."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Usuário base não encontrado após criação."));
         
         Medico novoMedico = new Medico();
         novoMedico.setCrm(dto.getCrm());
@@ -56,19 +55,21 @@ public class MedicoServiceImpl implements IMedicoService {
         novoMedico.setUsuario(usuario);    
         
         Medico medicoSalvo = medicoRepository.save(novoMedico);
-
         return toResponseDTO(medicoSalvo);
     }
 
     @Override
     @Transactional
     public MedicoResponseDTO atualizar(UUID id, MedicoCadastroDTO dto) {
-   
+        // Tenta buscar pelo ID do Médico. Se não achar, busca pelo ID do Usuário vinculado.
         Medico medico = medicoRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
+            .orElseGet(() -> medicoRepository.findAll().stream()
+                .filter(m -> m.getUsuario().getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado com ID: " + id)));
 
+        // Atualização do CRM (se fornecido)
         if (dto.getCrm() != null && !dto.getCrm().isBlank()) {
-        	
             if (!dto.getCrm().equals(medico.getCrm())) {
                 Optional<Medico> crmExistente = medicoRepository.findByCrm(dto.getCrm());
                 if (crmExistente.isPresent()) {
@@ -78,12 +79,13 @@ public class MedicoServiceImpl implements IMedicoService {
             }
         }
 
-        if (dto.getEspecialidade() != null) {
+        // Atualização da Especialidade (se fornecida)
+        if (dto.getEspecialidade() != null && !dto.getEspecialidade().isBlank()) {
             medico.setEspecialidade(dto.getEspecialidade());
         }
         
+        // Atualização dos dados de Usuário (Nome, Email, Senha)
         Usuario usuario = medico.getUsuario();
-        
         usuarioService.atualizar(usuario.getId(), 
                                  new UsuarioCadastroDTO(
                                      dto.getNome(), 
@@ -92,13 +94,18 @@ public class MedicoServiceImpl implements IMedicoService {
                                      TipoUsuario.MEDICO
                                  ));
         
-        return toResponseDTO(medicoRepository.save(medico));
+        Medico medicoSalvo = medicoRepository.save(medico);
+        return toResponseDTO(medicoSalvo);
     }
 
     @Override
     public MedicoResponseDTO buscarPorId(UUID id) {
+        // Aplica a mesma lógica de busca flexível para o GET por ID
         Medico medico = medicoRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado."));
+            .orElseGet(() -> medicoRepository.findAll().stream()
+                .filter(m -> m.getUsuario().getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado.")));
         return toResponseDTO(medico);
     }
 
@@ -127,18 +134,18 @@ public class MedicoServiceImpl implements IMedicoService {
     @Transactional
     public void remover(UUID id) {
         Medico medico = medicoRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado para remoção."));
+            .orElseGet(() -> medicoRepository.findAll().stream()
+                .filter(m -> m.getUsuario().getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado para remoção.")));
         
         UUID usuarioId = medico.getUsuario().getId();
-        
         medicoRepository.delete(medico);
-        
         usuarioService.remover(usuarioId);    
     }
 
     private MedicoResponseDTO toResponseDTO(Medico medico) {
         return MedicoResponseDTO.builder()
-            // O getId() do Medico agora retorna UUID, compatível com o DTO
             .id(medico.getId())
             .crm(medico.getCrm())
             .especialidade(medico.getEspecialidade())
