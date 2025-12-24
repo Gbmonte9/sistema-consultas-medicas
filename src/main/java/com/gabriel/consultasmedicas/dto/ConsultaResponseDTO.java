@@ -14,7 +14,7 @@ public class ConsultaResponseDTO {
     private LocalDateTime dataHora;
     private LocalDateTime dataFim;    
     private StatusConsulta status;
-    private String motivo; // Novo campo para retornar ao React
+    private String motivo; 
     private MedicoConsultaDTO medico;
     private PacienteConsultaDTO paciente;
 
@@ -33,5 +33,6 @@ public class ConsultaResponseDTO {
         private UUID id;    
         private String nome;
         private String cpf;
+        private String email; 
     }
 }

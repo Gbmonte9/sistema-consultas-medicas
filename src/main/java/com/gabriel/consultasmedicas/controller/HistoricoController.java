@@ -10,10 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/historico")
+@RequestMapping("/api/historicos") // Alterado para plural para bater com o frontend
 public class HistoricoController {
 
     private final IHistoricoService historicoService;
@@ -31,6 +32,13 @@ public class HistoricoController {
     @GetMapping("/{id}")
     public ResponseEntity<HistoricoResponseDTO> buscarPorId(@PathVariable UUID id) {
         HistoricoResponseDTO response = historicoService.buscarPorId(id);
+        return ResponseEntity.ok(response);
+    }
+
+    // --- NOVO MÉTODO PARA O PRONTUÁRIO DO PACIENTE ---
+    @GetMapping("/paciente/{pacienteId}")
+    public ResponseEntity<List<HistoricoResponseDTO>> listarPorPaciente(@PathVariable UUID pacienteId) {
+        List<HistoricoResponseDTO> response = historicoService.buscarPorPacienteId(pacienteId);
         return ResponseEntity.ok(response);
     }
 
