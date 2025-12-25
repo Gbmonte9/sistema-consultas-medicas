@@ -9,8 +9,7 @@ import com.gabriel.consultasmedicas.model.Paciente;
 import com.gabriel.consultasmedicas.model.TipoUsuario;
 import com.gabriel.consultasmedicas.model.Usuario;
 import com.gabriel.consultasmedicas.repository.PacienteRepository;
-
-import com.gabriel.consultasmedicas.service.util.CpfHasher; 
+import com.gabriel.consultasmedicas.service.util.CpfEncryptor; 
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,25 +26,24 @@ public class PacienteServiceImpl implements IPacienteService {
 
     private final PacienteRepository pacienteRepository;
     private final IUsuarioService usuarioService;    
-    private final CpfHasher cpfHasher; 
+    private final CpfEncryptor cpfEncryptor; 
 
     public PacienteServiceImpl(
         PacienteRepository pacienteRepository, 
         IUsuarioService usuarioService,
-        CpfHasher cpfHasher 
+        CpfEncryptor cpfEncryptor 
     ) {
         this.pacienteRepository = pacienteRepository;
         this.usuarioService = usuarioService;
-        this.cpfHasher = cpfHasher; 
+        this.cpfEncryptor = cpfEncryptor; 
     }
 
     @Override
     @Transactional
     public PacienteResponseDTO criar(PacienteCadastroDTO dto) {
+        String encryptedCpf = cpfEncryptor.encrypt(dto.getCpf());
         
-        String hashedCpf = cpfHasher.hash(dto.getCpf());
-        
-        if (pacienteRepository.findByCpf(hashedCpf).isPresent()) {
+        if (pacienteRepository.findByCpf(encryptedCpf).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado.");
         }
         
@@ -58,44 +56,36 @@ public class PacienteServiceImpl implements IPacienteService {
         usuarioService.criar(usuarioDto);
         
         Usuario usuario = usuarioService.buscarPorEmail(dto.getEmail())
-                                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Usuário base não encontrado após criação."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Usuário base não encontrado."));
         
         Paciente novoPaciente = new Paciente();
-        
-        novoPaciente.setCpf(hashedCpf);
-        
+        novoPaciente.setCpf(encryptedCpf); 
         novoPaciente.setTelefone(dto.getTelefone());
         novoPaciente.setUsuario(usuario);    
         
-        Paciente pacienteSalvo = pacienteRepository.save(novoPaciente);
-
-        return toResponseDTO(pacienteSalvo);
+        return toResponseDTO(pacienteRepository.save(novoPaciente));
     }
 
     @Override
     @Transactional
     public PacienteResponseDTO atualizar(UUID id, PacienteCadastroDTO dto) {
-
         Paciente paciente = pacienteRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
         
         if (dto.getCpf() != null && !dto.getCpf().isBlank()) {
-            String newHashedCpf = cpfHasher.hash(dto.getCpf());
+            String newEncryptedCpf = cpfEncryptor.encrypt(dto.getCpf());
             
-            if (!newHashedCpf.equals(paciente.getCpf())) {
-                Optional<Paciente> cpfExistente = pacienteRepository.findByCpf(newHashedCpf);
-                if (cpfExistente.isPresent()) {
-                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Novo CPF já cadastrado por outro paciente.");
+            if (!newEncryptedCpf.equals(paciente.getCpf())) {
+                if (pacienteRepository.findByCpf(newEncryptedCpf).isPresent()) {
+                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Novo CPF já cadastrado.");
                 }
-                paciente.setCpf(newHashedCpf);
+                paciente.setCpf(newEncryptedCpf);
             }
         }
 
         paciente.setTelefone(dto.getTelefone());
         
-        Usuario usuario = paciente.getUsuario();
-        
-        usuarioService.atualizar(usuario.getId(), 
+        usuarioService.atualizar(paciente.getUsuario().getId(), 
             new UsuarioCadastroDTO(
                 dto.getNome(), 
                 dto.getEmail(), 
@@ -116,10 +106,9 @@ public class PacienteServiceImpl implements IPacienteService {
 
     @Override
     public PacienteResponseDTO buscarPorCpf(String cpf) {
-        String hashedCpf = cpfHasher.hash(cpf);
-        
-        Paciente paciente = pacienteRepository.findByCpf(hashedCpf)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado pelo CPF."));
+        String encryptedCpf = cpfEncryptor.encrypt(cpf);
+        Paciente paciente = pacienteRepository.findByCpf(encryptedCpf)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
         return toResponseDTO(paciente);
     }
 
@@ -134,19 +123,19 @@ public class PacienteServiceImpl implements IPacienteService {
     @Transactional
     public void remover(UUID id) {
         Paciente paciente = pacienteRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado para remoção."));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado."));
         
         UUID usuarioId = paciente.getUsuario().getId();
-        
         pacienteRepository.delete(paciente);
-        
         usuarioService.remover(usuarioId);
     }
 
     private PacienteResponseDTO toResponseDTO(Paciente paciente) {
+        String cpfDescriptografado = cpfEncryptor.decrypt(paciente.getCpf());
+
         return PacienteResponseDTO.builder()
             .id(paciente.getId())
-            .cpf(paciente.getCpf()) 
+            .cpf(cpfDescriptografado) 
             .telefone(paciente.getTelefone())
             .nomeUsuario(paciente.getUsuario().getNome())
             .emailUsuario(paciente.getUsuario().getEmail())

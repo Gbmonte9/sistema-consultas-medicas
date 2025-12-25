@@ -28,10 +28,6 @@ public class UsuarioController {
         return new ResponseEntity<>(response, HttpStatus.CREATED); 
     }
 
-    /**
-     * NOVO MÉTODO: Atualiza os dados do usuário (Perfil)
-     * Esse método é o que o botão "Salvar Alterações" do React vai chamar.
-     */
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable UUID id, @RequestBody UsuarioCadastroDTO requestDTO) {
         UsuarioResponseDTO response = usuarioService.atualizar(id, requestDTO);

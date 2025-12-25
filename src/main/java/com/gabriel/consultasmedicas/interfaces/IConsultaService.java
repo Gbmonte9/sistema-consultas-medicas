@@ -11,12 +11,10 @@ import java.util.UUID;
 
 public interface IConsultaService {
     
-    // MÉTODOS QUE ESTAVAM FALTANDO:
     List<ConsultaResponseDTO> buscarAgendaDoDia(UUID medicoId);
     
     Map<String, Long> buscarEstatisticasDash(UUID medicoId);
 
-    // DEMAIS MÉTODOS:
     ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto);
     
     ConsultaResponseDTO agendarEFinalizar(ConsultaAgendamentoDTO dto);

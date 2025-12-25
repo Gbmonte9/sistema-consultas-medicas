@@ -7,15 +7,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.GenerationType; 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
-import org.hibernate.annotations.GenericGenerator; 
-
 
 @Entity
 @Table(name = "pacientes")
@@ -25,14 +21,10 @@ import org.hibernate.annotations.GenericGenerator;
 public class Paciente {
     
     @Id
-    @GeneratedValue(generator = "UUID") 
-    @GenericGenerator(
-        name = "UUID", 
-        strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @GeneratedValue 
     private UUID id; 
-    
-    @Column(name = "cpf", nullable = false, unique = true, length = 64) 
+
+    @Column(name = "cpf", nullable = false, unique = true, length = 255) 
     private String cpf;
     
     @Column(length = 20)

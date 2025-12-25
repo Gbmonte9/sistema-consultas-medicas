@@ -59,10 +59,7 @@ public class HistoricoServiceImpl implements IHistoricoService {
         return toResponseDTO(historicoSalvo);
     }
 
-    /**
-     * NOVO: Busca todo o prontuário de um paciente.
-     * Essencial para o botão "Ver Prontuário" no React.
-     */
+   
     @Override
     public List<HistoricoResponseDTO> buscarPorPacienteId(UUID pacienteId) {
         List<Historico> historicos = historicoRepository.findByPacienteId(pacienteId);

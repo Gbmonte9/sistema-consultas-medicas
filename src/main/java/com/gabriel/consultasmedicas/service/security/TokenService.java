@@ -18,9 +18,6 @@ public class TokenService {
     @Value("${api.security.token.secret:minha-chave-secreta}")
     private String secret;
 
-    /**
-     * Gera o Token JWT para o usuário que acabou de logar
-     */
     public String gerarToken(Usuario usuario) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
@@ -34,9 +31,6 @@ public class TokenService {
         }
     }
 
-    /**
-     * Valida o token vindo do React e retorna o e-mail do usuário
-     */
     public String validarToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);

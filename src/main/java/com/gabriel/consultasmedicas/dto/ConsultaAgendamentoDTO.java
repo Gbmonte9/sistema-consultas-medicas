@@ -25,6 +25,5 @@ public class ConsultaAgendamentoDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") 
     private LocalDateTime dataHora;
 
-    // Novo campo para capturar o motivo enviado pelo React
     private String motivo; 
 }

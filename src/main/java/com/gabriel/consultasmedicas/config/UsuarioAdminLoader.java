@@ -24,7 +24,6 @@ public class UsuarioAdminLoader implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         
-        // 1. CRIAR ADMIN DO SISTEMA
         if (usuarioRepository.findByEmail("admin@admin.com").isEmpty()) {
             Usuario admin = new Usuario();
             admin.setNome("Administrador do Sistema");
@@ -35,7 +34,6 @@ public class UsuarioAdminLoader implements CommandLineRunner {
             System.out.println("✅ ADMIN CONFIGURADO.");
         }
 
-        // 2. DADOS DOS MÉDICOS
         String[] nomesMedicos = {
             "Dr. Ricardo Oliveira", "Dra. Sandra Helena", "Dr. Marcos Vinícius", 
             "Dra. Beatriz Costa", "Dr. Juliano Mendes", "Dra. Cláudia Souza"
@@ -56,13 +54,10 @@ public class UsuarioAdminLoader implements CommandLineRunner {
             "CRM-PR 112233", "CRM-SC 445566", "CRM-RS 778899"
         };
 
-        // LOOP PARA CRIAÇÃO DE MÉDICOS
         for (int i = 0; i < nomesMedicos.length; i++) {
             
-            // Verifica se o médico já existe pelo e-mail
             if (usuarioRepository.findByEmail(emailsMedicos[i]).isEmpty()) {
                 
-                // --- 1. CRIAR USUÁRIO DO MÉDICO ---
                 Usuario userMed = new Usuario();
                 userMed.setNome(nomesMedicos[i]);
                 userMed.setEmail(emailsMedicos[i]);
@@ -70,11 +65,10 @@ public class UsuarioAdminLoader implements CommandLineRunner {
                 userMed.setTipo(TipoUsuario.MEDICO); 
                 userMed = usuarioRepository.save(userMed);
 
-                // --- 2. CRIAR PERFIL DO MÉDICO ---
                 Medico medico = new Medico();
                 medico.setCrm(crms[i]); 
                 medico.setEspecialidade(especialidades[i]);
-                medico.setUsuario(userMed); // Vincula ao Usuário salvo acima
+                medico.setUsuario(userMed);
                 
                 medicoRepository.save(medico);
 

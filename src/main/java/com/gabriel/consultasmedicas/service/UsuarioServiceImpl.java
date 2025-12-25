@@ -32,13 +32,16 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDTO criar(UsuarioCadastroDTO requestDTO) {
-        if (usuarioRepository.findByEmail(requestDTO.getEmail().trim().toLowerCase()).isPresent()) {
+        
+        String emailNormalizado = requestDTO.getEmail().trim().toLowerCase();
+        
+        if (usuarioRepository.findByEmail(emailNormalizado).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email já cadastrado.");
         }
 
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(requestDTO.getNome());
-        novoUsuario.setEmail(requestDTO.getEmail().trim().toLowerCase());
+        novoUsuario.setEmail(emailNormalizado);
         novoUsuario.setTipo(requestDTO.getTipo());
 
         String senhaCriptografada = passwordEncoder.encode(requestDTO.getSenha());

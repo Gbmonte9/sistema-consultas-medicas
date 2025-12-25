@@ -31,13 +31,12 @@ public class SecurityFilter extends OncePerRequestFilter {
         
         if (token != null && token.chars().filter(ch -> ch == '.').count() == 2) {
             try {
-            	
                 UUID userId = jwtService.extractUserId(token);
                 
-                if (userId != null) {
+                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     var usuario = usuarioRepository.findById(userId).orElse(null);
 
-                    if (usuario != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    if (usuario != null) {
                         var authentication = new UsernamePasswordAuthenticationToken(
                                 usuario, null, usuario.getAuthorities());
                         
@@ -45,8 +44,8 @@ public class SecurityFilter extends OncePerRequestFilter {
                     }
                 }
             } catch (Exception e) {
+                SecurityContextHolder.clearContext();
                 System.err.println("Filtro: Erro ao validar token JWT -> " + e.getMessage());
-                SecurityContextHolder.clearContext(); 
             }
         }
         

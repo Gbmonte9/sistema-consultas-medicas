@@ -27,47 +27,32 @@ public class ConsultaController {
         this.historicoService = historicoService;
     }
 
-    /**
-     * DASHBOARD: Lista a agenda do dia (Hoje) para um médico específico.
-     * Resolve o erro 404 em consultasService.js:44
-     */
     @GetMapping("/medico/{id}/hoje")
     public ResponseEntity<List<ConsultaResponseDTO>> listarAgendaDoDia(@PathVariable UUID id) {
         List<ConsultaResponseDTO> agenda = consultaService.buscarAgendaDoDia(id);
         return ResponseEntity.ok(agenda);
     }
 
-    /**
-     * DASHBOARD: Retorna contadores de consultas (Hoje, Atendidos, Cancelados).
-     * Resolve o erro 404 em consultasService.js:59
-     */
     @GetMapping("/medico/{id}/estatisticas")
     public ResponseEntity<Map<String, Long>> buscarEstatisticas(@PathVariable UUID id) {
         Map<String, Long> stats = consultaService.buscarEstatisticasDash(id);
         return ResponseEntity.ok(stats);
     }
 
-    /**
-     * Lista os pacientes ÚNICOS atendidos por um médico.
-     */
     @GetMapping("/medico/{id}/pacientes")
     public ResponseEntity<List<?>> listarPacientesPorMedico(@PathVariable UUID id) {
         var pacientes = consultaService.listarPacientesAtendidosPorMedico(id);
         return ResponseEntity.ok(pacientes);
     }
 
-    /**
-     * Lista as consultas de um médico.
-     */
+  
     @GetMapping("/medico/{id}")
     public ResponseEntity<List<ConsultaResponseDTO>> listarPorMedico(@PathVariable UUID id) {
         List<ConsultaResponseDTO> consultas = consultaService.listarPorMedicoId(id);
         return ResponseEntity.ok(consultas);
     }
 
-    /**
-     * Lista as consultas de um paciente. 
-     */
+  
     @GetMapping("/paciente/{id}")
     public ResponseEntity<List<ConsultaResponseDTO>> listarPorPaciente(@PathVariable UUID id) {
         List<ConsultaResponseDTO> consultas = consultaService.listarPorPacienteId(id);

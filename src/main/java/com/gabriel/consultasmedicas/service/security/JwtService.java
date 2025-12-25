@@ -17,7 +17,7 @@ import java.util.UUID;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret-key}")
+    @Value("${api.security.token.secret}")
     private String SECRET_KEY;
 
     @Value("${jwt.expiration}")
@@ -58,14 +58,17 @@ public class JwtService {
     }
     
     public UUID extractUserId(String token) {
-        String userIdString = extractClaim(token, "userId", String.class);
-        if (userIdString != null) {
-            return UUID.fromString(userIdString);
+        try {
+            String userIdString = extractClaim(token, "userId", String.class);
+            if (userIdString != null) {
+                return UUID.fromString(userIdString);
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao extrair UUID do token: " + e.getMessage());
         }
         return null;
     }
     
-    // MUDANÇA AQUI: Removido Decoders.BASE64.decode para aceitar qualquer string do application.properties
     private Key getSignInKey() {
         byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);

@@ -14,13 +14,8 @@ import com.gabriel.consultasmedicas.model.Historico;
 @Repository
 public interface HistoricoRepository extends JpaRepository<Historico, UUID> {
     
-    // Busca o histórico de uma consulta específica
     Optional<Historico> findByConsultaId(UUID consultaId);
 
-    /**
-     * Busca todos os históricos de saúde de um paciente específico.
-     * Navega: Historico -> Consulta -> Paciente
-     */
     @Query("SELECT h FROM Historico h " +
            "WHERE h.consulta.paciente.id = :pacienteId " +
            "ORDER BY h.consulta.dataHora DESC")

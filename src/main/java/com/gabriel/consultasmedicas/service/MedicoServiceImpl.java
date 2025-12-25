@@ -61,14 +61,12 @@ public class MedicoServiceImpl implements IMedicoService {
     @Override
     @Transactional
     public MedicoResponseDTO atualizar(UUID id, MedicoCadastroDTO dto) {
-        // Tenta buscar pelo ID do Médico. Se não achar, busca pelo ID do Usuário vinculado.
         Medico medico = medicoRepository.findById(id)
             .orElseGet(() -> medicoRepository.findAll().stream()
                 .filter(m -> m.getUsuario().getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado com ID: " + id)));
 
-        // Atualização do CRM (se fornecido)
         if (dto.getCrm() != null && !dto.getCrm().isBlank()) {
             if (!dto.getCrm().equals(medico.getCrm())) {
                 Optional<Medico> crmExistente = medicoRepository.findByCrm(dto.getCrm());
@@ -79,12 +77,10 @@ public class MedicoServiceImpl implements IMedicoService {
             }
         }
 
-        // Atualização da Especialidade (se fornecida)
         if (dto.getEspecialidade() != null && !dto.getEspecialidade().isBlank()) {
             medico.setEspecialidade(dto.getEspecialidade());
         }
         
-        // Atualização dos dados de Usuário (Nome, Email, Senha)
         Usuario usuario = medico.getUsuario();
         usuarioService.atualizar(usuario.getId(), 
                                  new UsuarioCadastroDTO(
@@ -100,7 +96,6 @@ public class MedicoServiceImpl implements IMedicoService {
 
     @Override
     public MedicoResponseDTO buscarPorId(UUID id) {
-        // Aplica a mesma lógica de busca flexível para o GET por ID
         Medico medico = medicoRepository.findById(id)
             .orElseGet(() -> medicoRepository.findAll().stream()
                 .filter(m -> m.getUsuario().getId().equals(id))

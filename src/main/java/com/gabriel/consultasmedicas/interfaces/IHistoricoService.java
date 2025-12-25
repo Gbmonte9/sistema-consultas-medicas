@@ -15,7 +15,6 @@ public interface IHistoricoService {
 
     HistoricoResponseDTO buscarPorConsultaId(UUID consultaId);
 
-    // ADICIONE ESTA LINHA:
     List<HistoricoResponseDTO> buscarPorPacienteId(UUID pacienteId);
 
     void remover(UUID id);

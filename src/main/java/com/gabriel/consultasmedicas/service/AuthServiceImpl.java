@@ -24,11 +24,10 @@ public class AuthServiceImpl implements IAuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final PacienteRepository pacienteRepository;
-    private final MedicoRepository medicoRepository; // Descomentado
+    private final MedicoRepository medicoRepository; 
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService; 
 
-    // Construtor atualizado com MedicoRepository
     public AuthServiceImpl(
         UsuarioRepository usuarioRepository, 
         PacienteRepository pacienteRepository,
@@ -68,7 +67,6 @@ public class AuthServiceImpl implements IAuthService {
         String crm = null;
         String especialidade = null;
         
-        // Lógica para PACIENTE
         if (usuarioAutenticado.getTipo() == TipoUsuario.PACIENTE) {
             Paciente paciente = pacienteRepository.findByUsuarioId(userId).orElse(null);
             if (paciente != null) {
@@ -77,7 +75,6 @@ public class AuthServiceImpl implements IAuthService {
             }
         }
         
-        // Lógica para MEDICO corrigida
         else if (usuarioAutenticado.getTipo() == TipoUsuario.MEDICO) {
             Medico medico = medicoRepository.findByUsuarioId(userId).orElse(null);
             if (medico != null) {

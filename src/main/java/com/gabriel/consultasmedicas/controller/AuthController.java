@@ -20,9 +20,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    /**
-     * Realiza o login do usuário usando os novos DTOs.
-     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginDTO) {
         
