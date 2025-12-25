@@ -34,10 +34,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                
-                .requestMatchers(HttpMethod.PUT, "/api/medicos/**").authenticated()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
                 
+                .requestMatchers(HttpMethod.POST, "/api/pacientes").permitAll()
+                
+                .requestMatchers(HttpMethod.PUT, "/api/medicos/**").authenticated()
                 .requestMatchers("/api/historico/**").authenticated()
                 .requestMatchers("/api/medicos/**").authenticated()
                 .requestMatchers("/api/pacientes/**").authenticated()
@@ -59,10 +60,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-      
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000")); 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -29,27 +29,25 @@ public class SecurityFilter extends OncePerRequestFilter {
         
         var token = this.recoverToken(request);
         
-        if (token != null) {
+        if (token != null && token.chars().filter(ch -> ch == '.').count() == 2) {
             try {
             	
                 UUID userId = jwtService.extractUserId(token);
                 
-                var usuario = usuarioRepository.findById(userId).orElse(null);
+                if (userId != null) {
+                    var usuario = usuarioRepository.findById(userId).orElse(null);
 
-                if (usuario != null) {
-                    var authentication = new UsernamePasswordAuthenticationToken(
-                            usuario, null, usuario.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    
-                } else {
-                    System.out.println("Filtro: Usuário não encontrado para o ID -> " + userId);
+                    if (usuario != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        var authentication = new UsernamePasswordAuthenticationToken(
+                                usuario, null, usuario.getAuthorities());
+                        
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             } catch (Exception e) {
-                System.err.println("Filtro: Erro na validação do token -> " + e.getMessage());
+                System.err.println("Filtro: Erro ao validar token JWT -> " + e.getMessage());
+                SecurityContextHolder.clearContext(); 
             }
-        } else {
-            // Log para quando a requisição chega sem token nenhum
-            // System.out.println("Filtro: Requisição sem token para URI -> " + request.getRequestURI());
         }
         
         filterChain.doFilter(request, response);
@@ -57,7 +55,17 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private String recoverToken(HttpServletRequest request) {
         var authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
-        return authHeader.replace("Bearer ", "");
+        
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        
+        String token = authHeader.replace("Bearer ", "").trim();
+        
+        if (token.isEmpty() || token.equalsIgnoreCase("null") || token.equalsIgnoreCase("undefined")) {
+            return null;
+        }
+        
+        return token;
     }
 }
