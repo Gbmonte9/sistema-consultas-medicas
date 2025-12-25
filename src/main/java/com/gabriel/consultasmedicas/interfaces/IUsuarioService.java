@@ -2,6 +2,7 @@ package com.gabriel.consultasmedicas.interfaces;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.gabriel.consultasmedicas.dto.UsuarioCadastroDTO;
 import com.gabriel.consultasmedicas.dto.UsuarioResponseDTO;
@@ -12,16 +13,16 @@ public interface IUsuarioService {
 
     UsuarioResponseDTO criar(UsuarioCadastroDTO requestDTO);
 
-    UsuarioResponseDTO buscarPorId(Long id);
+    UsuarioResponseDTO buscarPorId(UUID id);
 
     List<UsuarioResponseDTO> listarTodos();
 
-    void remover(Long id);
+    void remover(UUID id);
 
     Optional<Usuario> buscarPorEmail(String email);
 
     List<UsuarioResponseDTO> buscarPorTipo(TipoUsuario tipo);
     
-    UsuarioResponseDTO atualizar(Long id, UsuarioCadastroDTO requestDTO);
+    UsuarioResponseDTO atualizar(UUID id, UsuarioCadastroDTO requestDTO);
 
 }

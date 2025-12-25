@@ -1,54 +1,77 @@
-# README
-# 🏥 Sistema de Gestão de Consultas Médicas API
+# 🏥 API de Gestão de Consultas Médicas
 
-O **Sistema de Gestão de Consultas Médicas** é uma **API REST completa** desenvolvida em Java com Spring Boot. O projeto é voltado para o gerenciamento centralizado de pacientes, médicos e agendamentos de consultas, atuando como o *backend* essencial para clínicas de pequeno e médio porte.
+Esta é uma **API RESTful profissional** desenvolvida com **Java 21** e **Spring Boot 3**, projetada para gerenciar o ecossistema de uma clínica médica. A API lida com autenticação, perfis de usuários, agendamentos inteligentes e geração de prontuários médicos.
 
-## 🚀 Objetivo
+---
 
-Atuar como a camada de serviços (backend) que centraliza e facilita o controle de agendamentos e informações médicas.
+## 💻 Projeto Full Stack
+Este repositório contém o **Back-end** do sistema. Para visualizar ou rodar a interface de usuário, acesse o repositório do Front-end:
+👉 **[Front-end em React - Sistema de Consultas](https://github.com/Gbmonte9/react-medica-consulta)**
 
-* Permite que **aplicativos frontend** (web, mobile, desktop) se conectem e utilizem as funcionalidades de agendamento, acompanhamento de agendas médicas e administração do sistema.
-* Garante a integridade e segurança dos dados através de regras de negócio robustas e controle de acesso.
 
-## ⚙️ Tecnologias e Arquitetura
 
-Este projeto adota uma arquitetura baseada em microsserviços/camadas REST.
+---
+
+## 🚀 Diferenciais de Implementação
+
+* **Java 21 LTS:** Uso de recursos modernos da linguagem para alta performance.
+* **Privacidade (AES-128):** Criptografia de dados sensíveis (CPF) na persistência, garantindo conformidade com a LGPD.
+* **Segurança Stateless:** Autenticação via **JWT (JSON Web Token)** com controle de acesso por perfis (RBAC).
+* **Documentação:** Integração com **Swagger/OpenAPI** para visualização e testes dos endpoints.
+
+---
+
+## ⚙️ Stack Tecnológica
 
 | Categoria | Tecnologia | Uso |
 | :--- | :--- | :--- |
-| **Linguagem** | Java 17+ | Core da aplicação. |
-| **Framework** | Spring Boot | Desenvolvimento rápido de APIs REST, Injeção de Dependência, Configuração. |
-| **Persistência** | Spring Data JPA / Hibernate | Mapeamento Objeto-Relacional (ORM). |
-| **Banco de Dados** | PostgreSQL | Armazenamento relacional robusto. |
-| **Segurança** | Spring Security | Autenticação (JWT/Basic) e Autorização por tipo de usuário (Admin, Médico, Paciente). |
-| **Desenvolvimento** | Lombok, Swagger | Redução de boilerplate, Documentação interativa de Endpoints. |
-| **Assíncrono** | Java Threads / Executors | Execuções em segundo plano e tarefas paralelas (ex: geração de relatórios). |
-| **Frontend (Futuro)** | HTML5, CSS3, Bootstrap (ou JavaFX) | Consumo da API por uma interface de usuário dedicada. |
+| **Linguagem** | Java 21 | Versão LTS (Virtual Threads). |
+| **Framework** | Spring Boot 3.2.2 | Base do desenvolvimento. |
+| **Segurança** | Spring Security & JWT | Filtros de segurança e tokens. |
+| **Banco de Dados** | PostgreSQL | Armazenamento relacional. |
+| **Documentação** | Swagger (OpenAPI) | Interface UI para testes. |
 
-## 🧩 Funcionalidades da API (Endpoints)
+---
 
-| Módulo | Funcionalidades |
-| :--- | :--- |
-| **Autenticação** | Cadastro, Login (geração de Token JWT) e Controle de permissões (Role-Based Access Control). |
-| **CRUD Básico** | CRUD completo de Médicos, Pacientes e Consultas. |
-| **Agendamento** | Agendamento, edição, cancelamento e verificação de conflito de consultas. |
-| **Histórico** | Geração e recuperação de Histórico Médico. |
-| **Relatórios** | Geração assíncrona de Relatórios em PDF (usando Threads/PDFBox). |
+## 🛠️ Como Executar (Eclipse IDE)
 
-## 📚 Estrutura da Documentação
+1. **Banco de Dados:** Crie o banco `sistema-consultas-medicas` no PostgreSQL.
+2. **Importação:** No Eclipse, importe como *Existing Maven Project*.
+3. **Properties:** Configure `application.properties` com seu usuário, senha e as chaves:
+   - `security.cpf.encrypt-secret=gabrielHealthS16` (16 caracteres)
+   - `api.security.token.secret=seu-segredo-jwt`
+4. **Execução:** Rode a classe `ConsultasMedicasApplication.java` como *Spring Boot App*.
 
-A documentação detalhada do projeto está localizada na pasta `/docs`. **Esta é a sua principal fonte de informação sobre a API.**
+---
 
-| Documento | Conteúdo |
-| :--- | :--- |
-| **`arquitetura.md`** | Detalhes da estrutura do sistema (MVC, Camadas de Serviço, Padrões, Componentes). |
-| **`modelagem-banco.md`** | O Dicionário de Dados, Diagrama Entidade-Relacionamento (DER) do PostgreSQL. |
-| **`casos-de-uso.md`** | Fluxos de trabalho principais, requisitos funcionais e não funcionais. |
-| **`rotas-api.md`** | Especificação completa dos Endpoints REST (Método, URI, Parâmetros, Respostas). |
-| **`interface.md`** | Wireframes e planejamento da interface de consumo da API (Frontend/Web/Mobile). |
-| **`threads.md`** | Estratégia e justificação para o uso de concorrência e tarefas assíncronas. |
+## 🧩 Endpoints da API
+
+### 🔐 Autenticação e Usuários (`/api/auth` & `/api/usuarios`)
+* `POST /api/auth/login` - Realiza login e retorna o Token JWT.
+* `POST /api/usuarios/registrar` - Cadastro de novos usuários no sistema.
+* `GET /api/usuarios` - Listagem de todos os usuários.
+* `GET /api/usuarios/tipo/{tipo}` - Filtra usuários (ADMIN, MEDICO, PACIENTE).
+* `PUT /api/usuarios/{id}` - Atualiza perfil de usuário.
+
+### 🩺 Pacientes e Médicos (`/api/pacientes` & `/api/medicos`)
+* `POST /api/pacientes` - Cadastro de pacientes (CPF criptografado).
+* `GET /api/pacientes` - Lista pacientes (Sistema descriptografa o CPF).
+* `GET /api/medicos` - Lista todos os médicos e especialidades.
+
+### 📅 Consultas e Dashboards (`/api/consultas`)
+* `GET /api/consultas/medico/{id}/hoje` - Agenda diária do médico.
+* `GET /api/consultas/medico/{id}/estatisticas` - Dados para dashboard (contadores).
+* `POST /api/consultas/agendar-e-finalizar` - Fluxo completo (Agendamento + Histórico).
+
+### 📝 Históricos e Relatórios (`/api/historicos`)
+* `GET /api/historicos/paciente/{id}` - Prontuário completo do paciente.
+* `GET /api/historicos/pdf/consultas` - Download de relatório geral em **PDF**.
+
+---
 
 ## 👨‍💻 Autor
 
-Gabriel Monte
-[LinkedIn](link-do-seu-linkedin) | [GitHub](link-do-seu-github)
+**Gabriel Monte** Desenvolvedor Back-end Java  
+
+🔗 [LinkedIn](https://www.linkedin.com/in/gabriel-rodrigues-mt/)  
+💻 [GitHub](https://github.com/Gbmonte9)

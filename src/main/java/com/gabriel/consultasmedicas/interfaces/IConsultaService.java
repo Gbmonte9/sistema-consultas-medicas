@@ -1,33 +1,43 @@
 package com.gabriel.consultasmedicas.interfaces;
 
-import java.util.List;
-
 import com.gabriel.consultasmedicas.dto.ConsultaAgendamentoDTO;
 import com.gabriel.consultasmedicas.dto.ConsultaResponseDTO;
+import com.gabriel.consultasmedicas.dto.PacienteResponseDTO;
 import com.gabriel.consultasmedicas.model.StatusConsulta;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public interface IConsultaService {
     
+    List<ConsultaResponseDTO> buscarAgendaDoDia(UUID medicoId);
+    
+    Map<String, Long> buscarEstatisticasDash(UUID medicoId);
+
     ConsultaResponseDTO agendar(ConsultaAgendamentoDTO dto);
-
-    void cancelar(Long id);
-
-    void remover(Long id);
-
-    void finalizar(Long id);
-
-    ConsultaResponseDTO atualizarStatus(Long id, StatusConsulta novoStatus);
-
-    ConsultaResponseDTO buscarPorId(Long id);
-
+    
+    ConsultaResponseDTO agendarEFinalizar(ConsultaAgendamentoDTO dto);
+    
+    void cancelar(UUID id);
+    
+    void finalizar(UUID id);
+    
+    ConsultaResponseDTO atualizarStatus(UUID id, StatusConsulta novoStatus);
+    
+    ConsultaResponseDTO buscarPorId(UUID id);
+    
     List<ConsultaResponseDTO> listarTodas();
-
-    List<ConsultaResponseDTO> listarPorMedicoId(Long medicoId);
-
-    List<ConsultaResponseDTO> listarPorMedicoEStatus(Long medicoId, StatusConsulta status);
-
-    List<ConsultaResponseDTO> listarPorPacienteId(Long pacienteId);
-
-    List<ConsultaResponseDTO> listarPorPacienteEStatus(Long pacienteId, StatusConsulta status);
+    
+    List<ConsultaResponseDTO> listarPorMedicoId(UUID id);
+    
+    List<PacienteResponseDTO> listarPacientesAtendidosPorMedico(UUID id);
+    
+    List<ConsultaResponseDTO> listarPorMedicoEStatus(UUID medicoId, StatusConsulta status);
+    
+    List<ConsultaResponseDTO> listarPorPacienteId(UUID id);
+    
+    List<ConsultaResponseDTO> listarPorPacienteEStatus(UUID pacienteId, StatusConsulta status);
+    
+    void remover(UUID id);
 }
